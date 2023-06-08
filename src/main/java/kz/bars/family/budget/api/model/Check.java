@@ -21,17 +21,17 @@ public class Check extends BaseEntity {
 
     private String note;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, optional = false)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "actor_id", foreignKey = @ForeignKey(name = "checks_actor_id_fk"))
     @JsonIgnore
     private Actor actor;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="income_id", foreignKey = @ForeignKey(name = "checks_income_id_fk"))
     @JsonIgnore
     private Income income;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="expense_id", foreignKey = @ForeignKey(name = "checks_expense_id_fk"))
     @JsonIgnore
     private Expense expense;

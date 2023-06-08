@@ -7,6 +7,7 @@ import kz.bars.family.budget.api.mapper.ExpenseMapper;
 import kz.bars.family.budget.api.model.Check;
 import kz.bars.family.budget.api.model.Expense;
 import kz.bars.family.budget.api.repository.ExpenseRepo;
+import kz.bars.family.budget.api.service.CheckService;
 import kz.bars.family.budget.api.service.ExpenseService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -24,6 +26,7 @@ public class ExpenseServiceImpl implements ExpenseService {
     final ExpenseRepo expenseRepo;
     final ExpenseMapper expenseMapper;
     final ExpenseCategoryMapper expenseCategoryMapper;
+    final CheckService checkService;
 
     @Override
     public ExpenseDto getExpenseDto(Long id) {
@@ -43,15 +46,17 @@ public class ExpenseServiceImpl implements ExpenseService {
             expense.setCategory(expenseCategoryMapper.toEntity(expenseDto.getCategory()));
 
             expenseRepo.save(expense);
-            log.debug("!New Expense added, name={}, description={}, category={}",
-                    expenseDto.getName(), expenseDto.getDescription(), expenseDto.getCategory().getId());
+            log.debug("!Expense added, name={}, description={}, category={}",
+                    expenseDto.getName(), expenseDto.getDescription(),
+                    expenseDto.getCategory() !=null ? expenseDto.getCategory().getId() : null);
 
             return expenseDto;
 
         } catch (Exception ex) {
 
             log.error("!Expense not added, name={}, description={}, category={}",
-                    expenseDto.getName(), expenseDto.getDescription(), expenseDto.getCategory().getId());
+                    expenseDto.getName(), expenseDto.getDescription(),
+                    expenseDto.getCategory() !=null ? expenseDto.getCategory().getId() : null);
 
             return null;
         }
@@ -69,14 +74,16 @@ public class ExpenseServiceImpl implements ExpenseService {
             expenseRepo.save(expense);
 
             log.debug("!Expense updated successfully id={}, name={}, description={}, category={}",
-                    expenseDto.getId(), expenseDto.getName(), expenseDto.getDescription(), expenseDto.getCategory().getId());
+                    expenseDto.getId(), expenseDto.getName(), expenseDto.getDescription(),
+                    expenseDto.getCategory() !=null ? expenseDto.getCategory().getId() : null);
 
             return expenseDto;
 
         } catch (Exception ex) {
 
             log.error("!Expense not updated, id={}, name={}, description={}, category={}",
-                    expenseDto.getId(), expenseDto.getName(), expenseDto.getDescription(), expenseDto.getCategory().getId());
+                    expenseDto.getId(), expenseDto.getName(), expenseDto.getDescription(),
+                    expenseDto.getCategory() !=null ? expenseDto.getCategory().getId() : null);
 
             return null;
         }
@@ -84,8 +91,19 @@ public class ExpenseServiceImpl implements ExpenseService {
 
     @Override
     public Long deleteExpenseDto(Long id) {
+
         try {
+            Expense expense = expenseRepo.findById(id).orElse(null);
+            Set<Check> checks = expense.getChecks();
+
             expenseRepo.deleteById(id);
+
+            // Checking for related entries in checks
+            if (!checks.isEmpty()) {
+                // Update the budget for all checks
+                checkService.updateBudget();
+            }
+
             log.debug("!Expense removed, id={}", id);
             return id;
 

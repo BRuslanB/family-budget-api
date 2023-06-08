@@ -17,11 +17,10 @@ public class Expense extends BaseEntity {
     private String description;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "category_id", referencedColumnName = "id",
-            foreignKey = @ForeignKey(name = "expense_expense_category_id_fk"))
+    @JoinColumn(name = "category_id", foreignKey = @ForeignKey(name = "expense_expense_category_id_fk"))
     private ExpenseCategory category;
 
-    @OneToMany(mappedBy = "expense", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "expense", cascade = CascadeType.REMOVE)
     private Set<Check> checks;
 
 }

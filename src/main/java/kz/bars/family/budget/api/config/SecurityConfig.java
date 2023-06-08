@@ -18,6 +18,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.DefaultSecurityFilterChain;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
 
 import static kz.bars.family.budget.api.JWT.JWTSecurityConstants.SECURED_URLs;
 import static kz.bars.family.budget.api.JWT.JWTSecurityConstants.UN_SECURED_URLs;
@@ -47,11 +48,20 @@ public class SecurityConfig extends SecurityConfigurerAdapter<DefaultSecurityFil
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http.csrf().disable()
+                .cors().configurationSource(request -> {
+                    CorsConfiguration corsConfig = new CorsConfiguration();
+                    corsConfig.addAllowedOrigin("http://localhost:5173"); // Разрешенный источник
+                    corsConfig.addAllowedHeader("*"); // Разрешить все заголовки
+                    corsConfig.addAllowedMethod("*"); // Разрешить все методы
+                    return corsConfig;
+                })
+                .and()
                 .authorizeHttpRequests()
                 .requestMatchers(UN_SECURED_URLs).permitAll()
-                .and()
-                .authorizeHttpRequests().requestMatchers(SECURED_URLs)
-                .hasAnyAuthority("ROLE_USER", "ROLE_ADMIN1").anyRequest().authenticated()
+//                .and()
+//                .authorizeHttpRequests().requestMatchers(SECURED_URLs)
+//                .hasAnyAuthority("ROLE_USER", "ROLE_ADMIN1").anyRequest().authenticated()
+                .requestMatchers(SECURED_URLs).authenticated()
                 .and()
                 .sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)

@@ -6,9 +6,12 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import kz.bars.family.budget.api.dto.ExpenseDto;
 import kz.bars.family.budget.api.dto.ExpenseSumDto;
+import kz.bars.family.budget.api.response.MessageResponse;
 import kz.bars.family.budget.api.service.ExpenseService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -31,93 +34,116 @@ public class ExpenseController {
     @GetMapping(value = "{id}")
     @PreAuthorize("isAuthenticated()")
     @Operation(description = "Getting a Expense..")
-    public ExpenseDto getExpense(@Parameter(description = "'expense' id")
-                                 @PathVariable(name = "id") Long id) {
+    public ResponseEntity<Object> getExpense(@Parameter(description = "'expense' id")
+                                             @PathVariable(name = "id") Long id) {
         log.debug("!Call method getting a Expense");
-//        log.debug(SecurityContextHolder.getContext().getAuthentication().getName());
+
         if (SecurityContextHolder.getContext().getAuthentication().isAuthenticated()) {
-            return expenseService.getExpenseDto(id);
+
+            ExpenseDto expenseDto = expenseService.getExpenseDto(id);
+            if (expenseDto != null) {
+                return ResponseEntity.ok(expenseDto);
+            }
         }
-        return null;
+        return new ResponseEntity<>(new MessageResponse("Expense not found"), HttpStatus.BAD_REQUEST);
     }
 
     @GetMapping
     @PreAuthorize("isAuthenticated()")
     @Operation(description = "Getting a list of All Expenses")
-    public List<ExpenseSumDto> getAllExpense() {
+    public ResponseEntity<Object> getAllExpense() {
         log.debug("!Call method getting a list of All Expenses");
-//        log.debug(SecurityContextHolder.getContext().getAuthentication().getName());
+
         if (SecurityContextHolder.getContext().getAuthentication().isAuthenticated()) {
-            return expenseService.getAllExpenseDto();
+
+            List<ExpenseSumDto> expenseSumDto = expenseService.getAllExpenseDto();
+            return ResponseEntity.ok(expenseSumDto);
         }
-        return null;
+        return new ResponseEntity<>(new MessageResponse("Expense list empty"), HttpStatus.BAD_REQUEST);
     }
 
     @GetMapping(value = "dates/{date1}/{date2}")
     @PreAuthorize("isAuthenticated()")
     @Operation(description = "Getting a list of Expenses for the period from.. to..")
-    public List<ExpenseSumDto> getAllExpenseBetweenDate(@Parameter(description = "date 'from'")
-                                                     @PathVariable(name = "date1") LocalDate dateFrom,
-                                                     @Parameter(description = "date 'to'")
-                                                     @PathVariable(name = "date2") LocalDate dateTo) {
+    public ResponseEntity<Object> getAllExpenseBetweenDate(@Parameter(description = "date 'from'")
+                                                           @PathVariable(name = "date1") LocalDate dateFrom,
+                                                           @Parameter(description = "date 'to'")
+                                                           @PathVariable(name = "date2") LocalDate dateTo) {
         log.debug("!Call method getting a list of Expenses for the period");
-//        log.debug(SecurityContextHolder.getContext().getAuthentication().getName());
+
         if (SecurityContextHolder.getContext().getAuthentication().isAuthenticated()) {
-            return expenseService.getAllExpenseDtoBetweenDate(dateFrom, dateTo);
+
+            List<ExpenseSumDto> expenseSumDto = expenseService.getAllExpenseDtoBetweenDate(dateFrom, dateTo);
+            return ResponseEntity.ok(expenseSumDto);
         }
-        return null;
+        return new ResponseEntity<>(new MessageResponse("Expense list for the period empty"), HttpStatus.BAD_REQUEST);
     }
 
     @PostMapping
     @PreAuthorize("hasAuthority('ROLE_ADMIN')") //не работает почему то
     @Operation(description = "Expense added")
-    public ExpenseDto addExpense(@RequestBody ExpenseDto expenseDto) {
+    public ResponseEntity<Object> addExpense(@RequestBody ExpenseDto expenseDto) {
         log.debug("!Call method Expense added");
-//        log.debug(SecurityContextHolder.getContext().getAuthentication().getName());
+
         if (SecurityContextHolder.getContext().getAuthentication().isAuthenticated()) {
             if (SecurityContextHolder.getContext().getAuthentication().getAuthorities().stream()
                     .map(GrantedAuthority::getAuthority)
                     .anyMatch(role -> role.equals("ROLE_ADMIN"))) { // contains("ROLE_ADMIN")
 
-                return expenseService.addExpenseDto(expenseDto);
+                if (expenseService.addExpenseDto(expenseDto) != null) {
+                    return new ResponseEntity<>(new MessageResponse("Expense added successfully!"), HttpStatus.CREATED);
+                }
+
+            } else {
+                return new ResponseEntity<>(new MessageResponse("Access denied"), HttpStatus.BAD_REQUEST);
             }
         }
-        return null;
+        return new ResponseEntity<>(new MessageResponse("Expense not added"), HttpStatus.BAD_REQUEST);
     }
 
     @PutMapping
     @PreAuthorize("hasAuthority('ROLE_ADMIN')") //не работает почему то
     @Operation(description = "Expense updated")
-    public ExpenseDto updateExpense(@RequestBody ExpenseDto expenseDto) {
+    public ResponseEntity<Object> updateExpense(@RequestBody ExpenseDto expenseDto) {
         log.debug("!Call method Expense updated");
-//        log.debug(SecurityContextHolder.getContext().getAuthentication().getName());
+
         if (SecurityContextHolder.getContext().getAuthentication().isAuthenticated()) {
             if (SecurityContextHolder.getContext().getAuthentication().getAuthorities().stream()
                     .map(GrantedAuthority::getAuthority)
                     .anyMatch(role -> role.equals("ROLE_ADMIN"))) { // contains("ROLE_ADMIN")
 
-                return expenseService.updateExpenseDto(expenseDto);
+                if (expenseService.updateExpenseDto(expenseDto) != null) {
+                    return ResponseEntity.ok(new MessageResponse("Expense updated successfully!"));
+                }
+
+            } else {
+                return new ResponseEntity<>(new MessageResponse("Access denied"), HttpStatus.BAD_REQUEST);
             }
         }
-        return null;
+        return new ResponseEntity<>(new MessageResponse("Expense not updated"), HttpStatus.BAD_REQUEST);
     }
 
     @DeleteMapping(value = "{id}")
     @PreAuthorize("hasAuthority('ROLE_ADMIN')") //не работает почему то
     @Operation(description = "Expense.. removed")
-    public Long deleteExpense(@Parameter(description = "'expense' id")
-                              @PathVariable(name = "id") Long id) {
+    public ResponseEntity<Object> deleteExpense(@Parameter(description = "'expense' id")
+                                                @PathVariable(name = "id") Long id) {
         log.debug("!Call method Expense removed");
-//        log.debug(SecurityContextHolder.getContext().getAuthentication().getName());
+
         if (SecurityContextHolder.getContext().getAuthentication().isAuthenticated()) {
             if (SecurityContextHolder.getContext().getAuthentication().getAuthorities().stream()
                     .map(GrantedAuthority::getAuthority)
                     .anyMatch(role -> role.equals("ROLE_ADMIN"))) { // contains("ROLE_ADMIN")
 
-                return expenseService.deleteExpenseDto(id);
+                if (expenseService.deleteExpenseDto(id) != null) {
+                    return ResponseEntity.ok(new MessageResponse("Expense removed successfully!"));
+                }
+
+            } else {
+                return new ResponseEntity<>(new MessageResponse("Access denied"), HttpStatus.BAD_REQUEST);
             }
         }
-        return null;
+        return new ResponseEntity<>(new MessageResponse("Expense not removed"), HttpStatus.BAD_REQUEST);
     }
 
 }

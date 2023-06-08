@@ -1,6 +1,7 @@
 package kz.bars.family.budget.api.user;
 
 import kz.bars.family.budget.api.JWT.JWTTokenProvider;
+import kz.bars.family.budget.api.exeption.UserNotFoundException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -19,13 +20,15 @@ public class CustomUserDetailsService implements UserDetailsService {
     }
 
     @Override
+    //нужно пересмотреть логику этого метода для данного приложения
     public UserDetails loadUserByUsername(String token) throws UsernameNotFoundException {
-        String extractedUsername = jwtTokenProvider.extractUsernameFromToken(token);
-        if (token != null && jwtTokenProvider.validateToken(token)) {
+        try {
+            String extractedUsername = jwtTokenProvider.extractUsernameFromToken(token);
             List<GrantedAuthority> authorities = jwtTokenProvider.extractAuthoritiesFromToken(token);
-                return new CustomUserDetails(extractedUsername, authorities);
+            return new CustomUserDetails(extractedUsername, authorities);
+        } catch (Exception ex) {
+            throw new UserNotFoundException("User not found");
         }
-        throw new UsernameNotFoundException("User not found with username: " + extractedUsername);
     }
 
 }

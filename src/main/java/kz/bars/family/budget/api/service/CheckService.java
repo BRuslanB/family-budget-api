@@ -10,6 +10,7 @@ public interface CheckService {
     CheckDto addCheckDto(CheckDto checkDto);
     CheckDto updateCheckDto(CheckDto checkDto);
     Long deleteCheckDto(Long id);
+    void updateBudget();
     List<CheckDto> getAllCheckDto();
     List<CheckDto> getAllCheckDtoBetweenDate(LocalDate dateFrom, LocalDate dateTo);
     List<CheckDto> getAllCheckDtoByIncomeId(Long id);
