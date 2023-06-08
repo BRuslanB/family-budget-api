@@ -16,7 +16,10 @@ public class Actor extends BaseEntity {
 
     private String description;
 
-    @OneToMany(mappedBy = "actor", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "actor", cascade = CascadeType.REMOVE, orphanRemoval = true)
     private Set<Check> checks;
+
+    @OneToMany(mappedBy = "actor", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private Set<Budget> budget;
 
 }

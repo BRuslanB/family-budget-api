@@ -4,8 +4,10 @@ import kz.bars.family.budget.api.dto.IncomeDto;
 import kz.bars.family.budget.api.dto.IncomeSumDto;
 import kz.bars.family.budget.api.mapper.IncomeMapper;
 import kz.bars.family.budget.api.model.Check;
+import kz.bars.family.budget.api.model.Expense;
 import kz.bars.family.budget.api.model.Income;
 import kz.bars.family.budget.api.repository.IncomeRepo;
+import kz.bars.family.budget.api.service.CheckService;
 import kz.bars.family.budget.api.service.IncomeService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -14,6 +16,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -22,6 +25,7 @@ public class IncomeServiceImpl implements IncomeService {
 
     final IncomeRepo incomeRepo;
     final IncomeMapper incomeMapper;
+    final CheckService checkService;
 
     @Override
     public IncomeDto getIncomeDto(Long id) {
@@ -81,7 +85,17 @@ public class IncomeServiceImpl implements IncomeService {
     public Long deleteIncomeDto(Long id) {
 
         try {
+            Income income = incomeRepo.findById(id).orElse(null);
+            Set<Check> checks = income.getChecks();
+
             incomeRepo.deleteById(id);
+
+            // Checking for related entries in checks
+            if (!checks.isEmpty()) {
+                // Update the budget for all checks
+                checkService.updateBudget();
+            }
+
             log.debug("!Income removed, id={}", id);
             return id;
 

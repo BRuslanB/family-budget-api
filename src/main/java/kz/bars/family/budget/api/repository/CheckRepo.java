@@ -2,6 +2,7 @@ package kz.bars.family.budget.api.repository;
 
 import kz.bars.family.budget.api.model.Check;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,5 +21,9 @@ public interface CheckRepo extends JpaRepository<Check, Long> {
     List<Check> findAllByActorIdOrderByDate(Long id);
     List<Check> findAllByActorIdAndDateBetweenOrderByDate(Long id, LocalDate date1, LocalDate date2);
     List<Check> findAllByActorIdAndDate(Long id, LocalDate date);
+
+    @Query("SELECT c FROM Check c WHERE (c.actor.id, c.date) IN " +
+            "(SELECT c2.actor.id, c2.date FROM Check c2 GROUP BY c2.actor.id, c2.date)")
+    List<Check> findDistinctByActorIdAndDate();
 
 }

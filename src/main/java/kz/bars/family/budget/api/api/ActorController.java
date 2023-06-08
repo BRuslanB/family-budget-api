@@ -5,9 +5,12 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import kz.bars.family.budget.api.dto.ActorDto;
+import kz.bars.family.budget.api.response.MessageResponse;
 import kz.bars.family.budget.api.service.ActorService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -29,78 +32,98 @@ public class ActorController {
     @GetMapping(value = "{id}")
     @PreAuthorize("isAuthenticated()")
     @Operation(description = "Getting an Actor..")
-    public ActorDto getActor(@Parameter(description = "'actor' id")
-                             @PathVariable(name = "id") Long id) {
+    public ResponseEntity<Object> getActor(@Parameter(description = "'actor' id")
+                                           @PathVariable(name = "id") Long id) {
         log.debug("!Call method getting an Actor");
-//        log.debug(SecurityContextHolder.getContext().getAuthentication().getName());
+
         if (SecurityContextHolder.getContext().getAuthentication().isAuthenticated()) {
-            return actorService.getActorDto(id);
+
+            ActorDto actorDto = actorService.getActorDto(id);
+            if (actorDto != null) {
+                return ResponseEntity.ok(actorDto);
+            }
         }
-        return null;
+        return new ResponseEntity<>(new MessageResponse("Actor not found"), HttpStatus.BAD_REQUEST);
     }
 
     @GetMapping
     @PreAuthorize("isAuthenticated()")
     @Operation(description = "Getting a list of All Actors")
-    public List<ActorDto> getAllActor() {
+    public ResponseEntity<Object> getAllActor() {
         log.debug("!Call method getting a list of All Actors");
-//        log.debug(SecurityContextHolder.getContext().getAuthentication().getName());
+
         if (SecurityContextHolder.getContext().getAuthentication().isAuthenticated()) {
-            return actorService.getAllActorDto();
+
+            List<ActorDto> actorDtoList = actorService.getAllActorDto();
+            return ResponseEntity.ok(actorDtoList);
         }
-        return null;
+        return new ResponseEntity<>(new MessageResponse("Actor list empty"), HttpStatus.BAD_REQUEST);
     }
 
     @PostMapping
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @Operation(description = "Actor added")
-    public ActorDto addActor(@RequestBody ActorDto actorDto) {
+    public ResponseEntity<Object> addActor(@RequestBody ActorDto actorDto) {
         log.debug("!Call method Actor added");
-//        log.debug(SecurityContextHolder.getContext().getAuthentication().getName());
+
         if (SecurityContextHolder.getContext().getAuthentication().isAuthenticated()) {
             if (SecurityContextHolder.getContext().getAuthentication().getAuthorities().stream()
                     .map(GrantedAuthority::getAuthority)
                     .anyMatch(role -> role.equals("ROLE_ADMIN"))) { // contains("ROLE_ADMIN")
 
-                return actorService.addActorDto(actorDto);
+                if (actorService.addActorDto(actorDto) != null) {
+                    return new ResponseEntity<>(new MessageResponse("Actor added successfully!"), HttpStatus.CREATED);
+                }
+
+            } else {
+                return new ResponseEntity<>(new MessageResponse("Access denied"), HttpStatus.BAD_REQUEST);
             }
         }
-        return null;
+        return new ResponseEntity<>(new MessageResponse("Actor not added"), HttpStatus.BAD_REQUEST);
     }
 
     @PutMapping
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @Operation(description = "Actor updated")
-    public ActorDto updateActor(@RequestBody ActorDto actorDto) {
+    public ResponseEntity<Object> updateActor(@RequestBody ActorDto actorDto) {
         log.debug("!Call method Actor updated");
-//        log.debug(SecurityContextHolder.getContext().getAuthentication().getName());
+
         if (SecurityContextHolder.getContext().getAuthentication().isAuthenticated()) {
             if (SecurityContextHolder.getContext().getAuthentication().getAuthorities().stream()
                     .map(GrantedAuthority::getAuthority)
                     .anyMatch(role -> role.equals("ROLE_ADMIN"))) { // contains("ROLE_ADMIN")
 
-                return actorService.updateActorDto(actorDto);
+                if (actorService.updateActorDto(actorDto) != null) {
+                    return ResponseEntity.ok(new MessageResponse("Actor updated successfully!"));
+                }
+
+            } else {
+                return new ResponseEntity<>(new MessageResponse("Access denied"), HttpStatus.BAD_REQUEST);
             }
         }
-        return null;
+        return new ResponseEntity<>(new MessageResponse("Actor not updated"), HttpStatus.BAD_REQUEST);
     }
 
     @DeleteMapping(value = "{id}")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @Operation(description = "Actor.. removed")
-    public Long deleteActor(@Parameter(description = "'actor' id")
-                            @PathVariable(name = "id") Long id) {
+    public ResponseEntity<Object> deleteActor(@Parameter(description = "'actor' id")
+                                              @PathVariable(name = "id") Long id) {
         log.debug("!Call method Actor removed");
-//        log.debug(SecurityContextHolder.getContext().getAuthentication().getName());
+
         if (SecurityContextHolder.getContext().getAuthentication().isAuthenticated()) {
             if (SecurityContextHolder.getContext().getAuthentication().getAuthorities().stream()
                     .map(GrantedAuthority::getAuthority)
                     .anyMatch(role -> role.equals("ROLE_ADMIN"))) { // contains("ROLE_ADMIN")
 
-                return actorService.deleteActorDto(id);
+                if (actorService.deleteActorDto(id) != null) {
+                    return ResponseEntity.ok(new MessageResponse("Actor removed successfully!"));
+                }
+
+            } else {
+                return new ResponseEntity<>(new MessageResponse("Access denied"), HttpStatus.BAD_REQUEST);
             }
         }
-        return null;
+        return new ResponseEntity<>(new MessageResponse("Actor not removed"), HttpStatus.BAD_REQUEST);
     }
-
 }

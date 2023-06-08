@@ -17,7 +17,7 @@ public class Income extends BaseEntity {
 
     private String description;
 
-    @OneToMany(mappedBy = "income", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "income", cascade = CascadeType.REMOVE)
     private Set<Check> checks;
 
 }

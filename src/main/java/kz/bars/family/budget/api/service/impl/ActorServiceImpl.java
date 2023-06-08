@@ -2,14 +2,18 @@ package kz.bars.family.budget.api.service.impl;
 
 import kz.bars.family.budget.api.dto.ActorDto;
 import kz.bars.family.budget.api.model.Actor;
+import kz.bars.family.budget.api.model.Check;
+import kz.bars.family.budget.api.model.Income;
 import kz.bars.family.budget.api.repository.ActorRepo;
 import kz.bars.family.budget.api.service.ActorService;
+import kz.bars.family.budget.api.service.CheckService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -17,6 +21,7 @@ import java.util.List;
 public class ActorServiceImpl implements ActorService {
 
     final ActorRepo actorRepo;
+    final CheckService checkService;
 
     @Override
     public ActorDto getActorDto(Long id) {
@@ -43,7 +48,7 @@ public class ActorServiceImpl implements ActorService {
             actor.setDescription(actorDto.getDescription());
 
             actorRepo.save(actor);
-            log.debug("!New Actor added, name={}, description={}",
+            log.debug("!Actor added successfully, name={}, description={}",
                     actorDto.getName(), actorDto.getDescription());
             return actorDto;
 
@@ -81,7 +86,17 @@ public class ActorServiceImpl implements ActorService {
     public Long deleteActorDto(Long id) {
 
         try {
+            Actor actor = actorRepo.findById(id).orElse(null);
+            Set<Check> checks = actor.getChecks();
+
             actorRepo.deleteById(id);
+
+            // Checking for related entries in checks
+            if (!checks.isEmpty()) {
+                // Update the budget for all checks
+                checkService.updateBudget();
+            }
+
             log.debug("!Actor removed, id={}", id);
             return id;
 

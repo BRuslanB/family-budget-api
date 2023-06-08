@@ -5,9 +5,12 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import kz.bars.family.budget.api.dto.CheckDto;
+import kz.bars.family.budget.api.response.MessageResponse;
 import kz.bars.family.budget.api.service.CheckService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
@@ -29,157 +32,195 @@ public class CheckController {
 
     @GetMapping(value = "{id}")
     @Operation(description = "Getting a Check..")
-    public CheckDto getCheck(@Parameter(description = "'check' id")
-                             @PathVariable(name = "id") Long id) {
+    public ResponseEntity<Object> getCheck(@Parameter(description = "'check' id")
+                                           @PathVariable(name = "id") Long id) {
         log.debug("!Call method getting a Check");
-//        log.debug(SecurityContextHolder.getContext().getAuthentication().getName());
+
         if (SecurityContextHolder.getContext().getAuthentication().isAuthenticated()) {
-            return checkService.getCheckDto(id);
+
+            CheckDto checkDto = checkService.getCheckDto(id);
+            if (checkDto != null) {
+                return ResponseEntity.ok(checkDto);
+            }
         }
-        return null;
+        return new ResponseEntity<>(new MessageResponse("Check not found"), HttpStatus.BAD_REQUEST);
     }
 
     @PostMapping
     @Operation(description = "Check added")
-    public CheckDto addCheck(@RequestBody CheckDto checkDto) {
+    public ResponseEntity<Object> addCheck(@RequestBody CheckDto checkDto) {
         log.debug("!Call method Check added");
-//        log.debug(SecurityContextHolder.getContext().getAuthentication().getName());
+
         if (SecurityContextHolder.getContext().getAuthentication().isAuthenticated()) {
-            return checkService.addCheckDto(checkDto);
+
+            if (checkService.addCheckDto(checkDto) != null) {
+                return new ResponseEntity<>(new MessageResponse("Check added successfully!"), HttpStatus.CREATED);
+            }
+
+        } else {
+            return new ResponseEntity<>(new MessageResponse("Access denied"), HttpStatus.BAD_REQUEST);
         }
-        return null;
+        return new ResponseEntity<>(new MessageResponse("Check not added"), HttpStatus.BAD_REQUEST);
     }
 
     @PutMapping
     @Operation(description = "Check updated")
-    public CheckDto updateCheck(@RequestBody CheckDto checkDto) {
+    public ResponseEntity<Object> updateCheck(@RequestBody CheckDto checkDto) {
         log.debug("!Call method Check updated");
-//        log.debug(SecurityContextHolder.getContext().getAuthentication().getName());
+
         if (SecurityContextHolder.getContext().getAuthentication().isAuthenticated()) {
-            return checkService.updateCheckDto(checkDto);
+
+            if (checkService.updateCheckDto(checkDto) != null) {
+                return ResponseEntity.ok(new MessageResponse("Check updated successfully!"));
+            }
+
+        } else {
+            return new ResponseEntity<>(new MessageResponse("Access denied"), HttpStatus.BAD_REQUEST);
         }
-        return null;
+        return new ResponseEntity<>(new MessageResponse("Check not updated"), HttpStatus.BAD_REQUEST);
     }
 
     @DeleteMapping(value = "{id}")
     @Operation(description = "Check.. removed")
-    public Long deleteCheck(@Parameter(description = "'check' id")
-                            @PathVariable(name = "id") Long id) {
+    public ResponseEntity<Object> deleteCheck(@Parameter(description = "'check' id")
+                                              @PathVariable(name = "id") Long id) {
         log.debug("!Call method Check removed");
-//        log.debug(SecurityContextHolder.getContext().getAuthentication().getName());
+
         if (SecurityContextHolder.getContext().getAuthentication().isAuthenticated()) {
-            return checkService.deleteCheckDto(id);
+
+            if (checkService.deleteCheckDto(id) != null) {
+                return ResponseEntity.ok(new MessageResponse("Check removed successfully!"));
+            }
+
+        } else {
+            return new ResponseEntity<>(new MessageResponse("Access denied"), HttpStatus.BAD_REQUEST);
         }
-        return null;
+        return new ResponseEntity<>(new MessageResponse("Check not removed"), HttpStatus.BAD_REQUEST);
     }
 
     @GetMapping()
     @Operation(description = "Getting a list of Checks")
-    public List<CheckDto> getAllCheck() {
+    public ResponseEntity<Object> getAllCheck() {
         log.debug("!Call method getting a list of All Checks");
-//        log.debug(SecurityContextHolder.getContext().getAuthentication().getName());
+
         if (SecurityContextHolder.getContext().getAuthentication().isAuthenticated()) {
-            return checkService.getAllCheckDto();
+
+            List<CheckDto> checkDtoList = checkService.getAllCheckDto();
+            return ResponseEntity.ok(checkDtoList);
         }
-        return null;
+        return new ResponseEntity<>(new MessageResponse("Check list empty"), HttpStatus.BAD_REQUEST);
     }
 
     @GetMapping(value = "dates/{date1}/{date2}")
     @Operation(description = "Getting a list of Checks for the period from.. to..")
-    public List<CheckDto> getAllCheckBetweenDate(@Parameter(description = "date 'from'")
-                                                 @PathVariable(name = "date1") LocalDate dateFrom,
-                                                 @Parameter(description = "date 'to'")
-                                                 @PathVariable(name = "date2") LocalDate dateTo) {
+    public ResponseEntity<Object> getAllCheckBetweenDate(@Parameter(description = "date 'from'")
+                                                         @PathVariable(name = "date1") LocalDate dateFrom,
+                                                         @Parameter(description = "date 'to'")
+                                                         @PathVariable(name = "date2") LocalDate dateTo) {
         log.debug("!Call method getting a list of Checks for the period");
-//        log.debug(SecurityContextHolder.getContext().getAuthentication().getName());
+
         if (SecurityContextHolder.getContext().getAuthentication().isAuthenticated()) {
-            return checkService.getAllCheckDtoBetweenDate(dateFrom, dateTo);
+
+            List<CheckDto> checkDtoList = checkService.getAllCheckDtoBetweenDate(dateFrom, dateTo);
+            return ResponseEntity.ok(checkDtoList);
         }
-        return null;
+        return new ResponseEntity<>(new MessageResponse("Check list for the period empty"), HttpStatus.BAD_REQUEST);
     }
 
     @GetMapping(value = "incomes/{id}")
     @Operation(description = "Getting a list of Checks for a given Income..")
-    public List<CheckDto> getAllCheckByIncomeId(@Parameter(description = "'income' id")
-                                                @PathVariable(name = "id") Long id) {
+    public ResponseEntity<Object> getAllCheckByIncomeId(@Parameter(description = "'income' id")
+                                                        @PathVariable(name = "id") Long id) {
         log.debug("!Call method getting a list of Checks for a given Income");
-//        log.debug(SecurityContextHolder.getContext().getAuthentication().getName());
+
         if (SecurityContextHolder.getContext().getAuthentication().isAuthenticated()) {
-            return checkService.getAllCheckDtoByIncomeId(id);
+
+            List<CheckDto> checkDtoList = checkService.getAllCheckDtoByIncomeId(id);
+            return ResponseEntity.ok(checkDtoList);
         }
-        return null;
+        return new ResponseEntity<>(new MessageResponse("Check list for a given Income empty"), HttpStatus.BAD_REQUEST);
     }
 
     @GetMapping(value = "incomes/{id}/dates/{date1}/{date2}")
     @Operation(description = "Getting a list of Checks for a given Income.. for the period from.. to..")
-    public List<CheckDto> getAllCheckByIncomeBetweenDate(@Parameter(description = "'income' id")
-                                                         @PathVariable(name = "id") Long id,
-                                                         @Parameter(description = "date 'from'")
-                                                         @PathVariable(name = "date1") LocalDate dateFrom,
-                                                         @Parameter(description = "date 'to'")
-                                                         @PathVariable(name = "date2") LocalDate dateTo) {
+    public ResponseEntity<Object> getAllCheckByIncomeBetweenDate(@Parameter(description = "'income' id")
+                                                                 @PathVariable(name = "id") Long id,
+                                                                 @Parameter(description = "date 'from'")
+                                                                 @PathVariable(name = "date1") LocalDate dateFrom,
+                                                                 @Parameter(description = "date 'to'")
+                                                                 @PathVariable(name = "date2") LocalDate dateTo) {
         log.debug("!Call method getting a list of Checks for a given Income for the period");
-//        log.debug(SecurityContextHolder.getContext().getAuthentication().getName());
+
         if (SecurityContextHolder.getContext().getAuthentication().isAuthenticated()) {
-            return checkService.getAllCheckDtoByIncomeBetweenDate(id, dateFrom, dateTo);
+
+            List<CheckDto> checkDtoList = checkService.getAllCheckDtoByIncomeBetweenDate(id, dateFrom, dateTo);
+            return ResponseEntity.ok(checkDtoList);
         }
-        return null;
+        return new ResponseEntity<>(new MessageResponse("Check list for a given Income for the period empty"), HttpStatus.BAD_REQUEST);
     }
 
     @GetMapping(value = "expenses/{id}")
     @Operation(description = "Getting a list of Checks for a given Expense..")
-    public List<CheckDto> getAllCheckByExpenseId(@Parameter(description = "'expense' id")
-                                                 @PathVariable(name = "id") Long id) {
+    public ResponseEntity<Object> getAllCheckByExpenseId(@Parameter(description = "'expense' id")
+                                                         @PathVariable(name = "id") Long id) {
         log.debug("!Call method getting a list of Checks for a given Expense");
-//        log.debug(SecurityContextHolder.getContext().getAuthentication().getName());
+
         if (SecurityContextHolder.getContext().getAuthentication().isAuthenticated()) {
-            return checkService.getAllCheckDtoByExpenseId(id);
+
+            List<CheckDto> checkDtoList = checkService.getAllCheckDtoByExpenseId(id);
+            return ResponseEntity.ok(checkDtoList);
         }
-        return null;
+        return new ResponseEntity<>(new MessageResponse("Check list for a given Expense"), HttpStatus.BAD_REQUEST);
     }
 
     @GetMapping(value = "expenses/{id}/dates/{date1}/{date2}")
     @Operation(description = "Getting a list of Checks for a given Expense.. for the period from.. to..")
-    public List<CheckDto> getAllCheckByExpenseBetweenDate(@Parameter(description = "'expense' id")
-                                                          @PathVariable(name = "id") Long id,
-                                                          @Parameter(description = "date 'from'")
-                                                          @PathVariable(name = "date1") LocalDate dateFrom,
-                                                          @Parameter(description = "date 'to'")
-                                                          @PathVariable(name = "date2") LocalDate dateTo) {
+    public ResponseEntity<Object> getAllCheckByExpenseBetweenDate(@Parameter(description = "'expense' id")
+                                                                  @PathVariable(name = "id") Long id,
+                                                                  @Parameter(description = "date 'from'")
+                                                                  @PathVariable(name = "date1") LocalDate dateFrom,
+                                                                  @Parameter(description = "date 'to'")
+                                                                  @PathVariable(name = "date2") LocalDate dateTo) {
         log.debug("!Call method getting a list of Checks for a given Expense for the period");
-//        log.debug(SecurityContextHolder.getContext().getAuthentication().getName());
+
         if (SecurityContextHolder.getContext().getAuthentication().isAuthenticated()) {
-            return checkService.getAllCheckDtoByExpenseBetweenDate(id, dateFrom, dateTo);
+
+            List<CheckDto> checkDtoList = checkService.getAllCheckDtoByExpenseBetweenDate(id, dateFrom, dateTo);
+            return ResponseEntity.ok(checkDtoList);
         }
-        return null;
+        return new ResponseEntity<>(new MessageResponse("Check list for a given Expense for the period empty"), HttpStatus.BAD_REQUEST);
     }
 
     @GetMapping(value = "actors/{id}")
     @Operation(description = "Getting a list of Checks for a given Actor..")
-    public List<CheckDto> getAllCheckByActorId(@Parameter(description = "'actor' id")
-                                               @PathVariable(name = "id") Long id) {
+    public ResponseEntity<Object> getAllCheckByActorId(@Parameter(description = "'actor' id")
+                                                       @PathVariable(name = "id") Long id) {
         log.debug("!Call method getting a list of Checks for a given Actor");
-//        log.debug(SecurityContextHolder.getContext().getAuthentication().getName());
+
         if (SecurityContextHolder.getContext().getAuthentication().isAuthenticated()) {
-            return checkService.getAllCheckDtoByActorId(id);
+
+            List<CheckDto> checkDtoList = checkService.getAllCheckDtoByActorId(id);
+            return ResponseEntity.ok(checkDtoList);
         }
-        return null;
+        return new ResponseEntity<>(new MessageResponse("Check list for a given Actor"), HttpStatus.BAD_REQUEST);
     }
 
     @GetMapping(value = "actors/{id}/dates/{date1}/{date2}")
     @Operation(description = "Getting a list of Checks for a given Actor.. for the period from.. to..")
-    public List<CheckDto> getAllCheckByActorBetweenDate(@Parameter(description = "'expense' id")
-                                                        @PathVariable(name = "id") Long id,
-                                                        @Parameter(description = "date 'from'")
-                                                        @PathVariable(name = "date1") LocalDate dateFrom,
-                                                        @Parameter(description = "date 'to'")
-                                                        @PathVariable(name = "date2") LocalDate dateTo) {
+    public ResponseEntity<Object> getAllCheckByActorBetweenDate(@Parameter(description = "'expense' id")
+                                                                @PathVariable(name = "id") Long id,
+                                                                @Parameter(description = "date 'from'")
+                                                                @PathVariable(name = "date1") LocalDate dateFrom,
+                                                                @Parameter(description = "date 'to'")
+                                                                @PathVariable(name = "date2") LocalDate dateTo) {
         log.debug("!Call method getting a list of Checks for a given Actor for the period");
-//        log.debug(SecurityContextHolder.getContext().getAuthentication().getName());
+
         if (SecurityContextHolder.getContext().getAuthentication().isAuthenticated()) {
-            return checkService.getAllCheckDtoByActorBetweenDate(id, dateFrom, dateTo);
+
+            List<CheckDto> checkDtoList = checkService.getAllCheckDtoByActorBetweenDate(id, dateFrom, dateTo);
+            return ResponseEntity.ok(checkDtoList);
         }
-        return null;
+        return new ResponseEntity<>(new MessageResponse("Check list for a given Actor for the period empty"), HttpStatus.BAD_REQUEST);
     }
 
 }

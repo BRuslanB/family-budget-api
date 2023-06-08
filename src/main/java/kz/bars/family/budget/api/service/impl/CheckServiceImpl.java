@@ -62,22 +62,15 @@ public class CheckServiceImpl implements CheckService {
             if (checkDto.getIncome() != null) {
                 incomeRepo.findById(checkDto.getIncome().getId()).ifPresent(check::setIncome);
             }
-        } catch (Exception ignored) {
-        }
-
-        try {
             if (checkDto.getExpense() != null) {
                 expenseRepo.findById(checkDto.getExpense().getId()).ifPresent(check::setExpense);
             }
-        } catch (Exception ignored) {
-        }
-
-        try {
             actorRepo.findById(checkDto.getActor().getId()).ifPresent(check::setActor);
+
             checkRepo.save(check);
             updateBudget(checkDto.getActor().getId(), checkDto.getDate());
 
-            log.debug("!New Check added, val={}, date={}, note={}, actor={}, income={}, expense={}",
+            log.debug("!Check added, val={}, date={}, note={}, actor={}, income={}, expense={}",
                     checkDto.getVal(), checkDto.getDate(), checkDto.getNote(), checkDto.getActor().getId(),
                     (checkDto.getIncome() != null ? checkDto.getIncome().getId() : null),
                     (checkDto.getExpense() != null ? checkDto.getExpense().getId() : null));
@@ -107,23 +100,26 @@ public class CheckServiceImpl implements CheckService {
             try {
                 Income income = incomeRepo.findById(checkDto.getIncome().getId()).orElseThrow();
                 check.setIncome(income);
-            } catch (Exception ignored) {
+            } catch (Exception ex) {
+                check.setIncome(null);
             }
 
             try {
                 Expense expense = expenseRepo.findById(checkDto.getExpense().getId()).orElseThrow();
                 check.setExpense(expense);
-            } catch (Exception ignored) {
+            } catch (Exception ex) {
+                check.setExpense(null);
             }
 
             actorRepo.findById(checkDto.getActor().getId()).ifPresent(check::setActor);
+
             checkRepo.save(check);
-            updateBudget(checkDto.getActor().getId(), checkDto.getDate());
+            updateBudget();
 
             log.debug("!Check updated successfully, val={}, date={}, note={}, actor={}, income={}, expense={}",
                     checkDto.getVal(), checkDto.getDate(), checkDto.getNote(), checkDto.getActor().getId(),
-                    (checkDto.getIncome() != null ? checkDto.getIncome().getId() : null),
-                    (checkDto.getExpense() != null ? checkDto.getExpense().getId() : null));
+                    checkDto.getIncome() != null ? checkDto.getIncome().getId() : null,
+                    checkDto.getExpense() != null ? checkDto.getExpense().getId() : null);
 
             return checkDto;
 
@@ -131,8 +127,8 @@ public class CheckServiceImpl implements CheckService {
 
             log.error("!Check not updated, val={}, date={}, note={}, actor={}, income={}, expense={}",
                     checkDto.getVal(), checkDto.getDate(), checkDto.getNote(), checkDto.getActor().getId(),
-                    (checkDto.getIncome() != null ? checkDto.getIncome().getId() : null),
-                    (checkDto.getExpense() != null ? checkDto.getExpense().getId() : null));
+                    checkDto.getIncome() != null ? checkDto.getIncome().getId() : null,
+                    checkDto.getExpense() != null ? checkDto.getExpense().getId() : null);
 
             return null;
         }
@@ -143,6 +139,7 @@ public class CheckServiceImpl implements CheckService {
 
         try {
             Check check = checkRepo.findById(id).orElseThrow();
+
             checkRepo.deleteById(id);
             updateBudget(check.getActor().getId(), check.getDate());
 
@@ -182,25 +179,52 @@ public class CheckServiceImpl implements CheckService {
             budget.setSum(sum);
         }
 
-        if (budget != null) {
+        try {
+            budgetRepo.save(budget);
+            log.debug("!Budget updated successfully, id={}, sum={}, date={}, actor={}",
+                    budget.getId(), budget.getSum(), budget.getDate(), budget.getActor().getId());
+
+        } catch (Exception ex) {
+
+            log.error("!Budget updated error");
+        }
+    }
+
+    public void updateBudget() {
+
+        List<Check> checkResultList = checkRepo.findDistinctByActorIdAndDate(); //вернуть все уникальные записи по actor и date
+        budgetRepo.deleteAll();
+
+        for (Check checkRes : checkResultList) {
+
+            List<Check> checkList = checkRepo.findAllByActorIdAndDate(checkRes.getActor().getId(), checkRes.getDate());
+            var sum = 0.0;
+
+            for (Check check : checkList) {
+                //Count Value
+                if (check.getIncome() != null)
+                    sum += check.getVal();
+                else
+                    sum -= check.getVal();
+            }
+
+            Budget budget = new Budget();
+            Actor actor = actorRepo.findById(checkRes.getActor().getId()).orElse(null);
+            if (actor != null) {
+                budget.setSum(sum);
+                budget.setDate(checkRes.getDate());
+                budget.setActor(actor);
+            }
+
             try {
-                if (sum != 0.0) {
-                    budgetRepo.save(budget);
-                    log.debug("!Budget updated successfully, id={}, sum={}, date={}, actor={}",
-                            budget.getId(), budget.getSum(), budget.getDate(), budget.getActor().getId());
-                } else {
-                    budgetRepo.delete(budget);
-                    log.error("!Budget removed, id={}", budget.getId());
-                }
+                budgetRepo.save(budget);
+                log.debug("!Budget updated successfully, id={}, sum={}, date={}, actor={}",
+                        budget.getId(), budget.getSum(), budget.getDate(), budget.getActor().getId());
 
             } catch (Exception ex) {
 
                 log.error("!Budget updated error");
             }
-
-        } else {
-
-            log.error("!Budget updated error");
         }
     }
 
