@@ -5,7 +5,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import kz.bars.family.budget.api.dto.ActorDto;
-import kz.bars.family.budget.api.response.MessageResponse;
+import kz.bars.family.budget.api.payload.response.MessageResponse;
 import kz.bars.family.budget.api.service.ActorService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -57,7 +57,7 @@ public class ActorController {
             List<ActorDto> actorDtoList = actorService.getAllActorDto();
             return ResponseEntity.ok(actorDtoList);
         }
-        return new ResponseEntity<>(new MessageResponse("Actor list empty"), HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(new MessageResponse("Actor list not found"), HttpStatus.BAD_REQUEST);
     }
 
     @PostMapping

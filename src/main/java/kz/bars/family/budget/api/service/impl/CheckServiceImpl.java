@@ -5,6 +5,8 @@ import kz.bars.family.budget.api.mapper.ActorMapper;
 import kz.bars.family.budget.api.mapper.ExpenseMapper;
 import kz.bars.family.budget.api.mapper.IncomeMapper;
 import kz.bars.family.budget.api.model.*;
+import kz.bars.family.budget.api.payload.request.CheckObjectRequest;
+import kz.bars.family.budget.api.payload.request.CheckRequest;
 import kz.bars.family.budget.api.repository.*;
 import kz.bars.family.budget.api.service.CheckService;
 import lombok.RequiredArgsConstructor;
@@ -44,8 +46,14 @@ public class CheckServiceImpl implements CheckService {
             checkDto.setIncome(incomeMapper.toDto(check.getIncome()));
             checkDto.setExpense(expenseMapper.toDto(check.getExpense()));
             checkDto.setActor(actorMapper.toDto(check.getActor()));
+            checkDto.setObject(check.getObjectId());
+
+            log.debug("!Getting a Check, id={}", id);
+
+        } else {
+
+            log.error("!Check not found: id={}", id);
         }
-        log.debug("!Getting a Check, id={}", id);
 
         return checkDto;
     }
@@ -57,6 +65,7 @@ public class CheckServiceImpl implements CheckService {
         check.setVal(checkDto.getVal());
         check.setDate(checkDto.getDate());
         check.setNote(checkDto.getNote());
+        check.setObjectId(checkDto.getObject());
 
         try {
             if (checkDto.getIncome() != null) {
@@ -70,65 +79,90 @@ public class CheckServiceImpl implements CheckService {
             checkRepo.save(check);
             updateBudget(checkDto.getActor().getId(), checkDto.getDate());
 
-            log.debug("!Check added, val={}, date={}, note={}, actor={}, income={}, expense={}",
+            log.debug("!Check added, val={}, date={}, note={}, actor={}, income={}, expense={}, object={}",
                     checkDto.getVal(), checkDto.getDate(), checkDto.getNote(), checkDto.getActor().getId(),
-                    (checkDto.getIncome() != null ? checkDto.getIncome().getId() : null),
-                    (checkDto.getExpense() != null ? checkDto.getExpense().getId() : null));
+                    checkDto.getIncome() != null ? checkDto.getIncome().getId() : null,
+                    checkDto.getExpense() != null ? checkDto.getExpense().getId() : null,
+                    checkDto.getObject());
 
             return checkDto;
 
         } catch (Exception ex) {
 
-            log.error("!Check not added, val={}, date={}, note={}, actor={}, income={}, expense={}",
+            log.error("!Check not added, val={}, date={}, note={}, actor={}, income={}, expense={}, object={}",
                     checkDto.getVal(), checkDto.getDate(), checkDto.getNote(), checkDto.getActor().getId(),
-                    (checkDto.getIncome() != null ? checkDto.getIncome().getId() : null),
-                    (checkDto.getExpense() != null ? checkDto.getExpense().getId() : null));
+                    checkDto.getIncome() != null ? checkDto.getIncome().getId() : null,
+                    checkDto.getExpense() != null ? checkDto.getExpense().getId() : null,
+                    checkDto.getObject());
 
             return null;
         }
     }
 
     @Override
-    public CheckDto updateCheckDto(CheckDto checkDto) {
+    public CheckRequest updateCheckRequest(CheckRequest checkRequest) {
 
         try {
-            Check check = checkRepo.findById(checkDto.getId()).orElseThrow();
-            check.setVal(checkDto.getVal());
-            check.setDate(checkDto.getDate());
-            check.setNote(checkDto.getNote());
+            Check check = checkRepo.findById(checkRequest.getId()).orElseThrow();
+            check.setVal(checkRequest.getVal());
+            check.setDate(checkRequest.getDate());
+            check.setNote(checkRequest.getNote());
 
             try {
-                Income income = incomeRepo.findById(checkDto.getIncome().getId()).orElseThrow();
+                Income income = incomeRepo.findById(checkRequest.getIncome().getId()).orElseThrow();
                 check.setIncome(income);
             } catch (Exception ex) {
                 check.setIncome(null);
             }
 
             try {
-                Expense expense = expenseRepo.findById(checkDto.getExpense().getId()).orElseThrow();
+                Expense expense = expenseRepo.findById(checkRequest.getExpense().getId()).orElseThrow();
                 check.setExpense(expense);
             } catch (Exception ex) {
                 check.setExpense(null);
             }
 
-            actorRepo.findById(checkDto.getActor().getId()).ifPresent(check::setActor);
+            actorRepo.findById(checkRequest.getActor().getId()).ifPresent(check::setActor);
 
             checkRepo.save(check);
             updateBudget();
 
             log.debug("!Check updated successfully, val={}, date={}, note={}, actor={}, income={}, expense={}",
-                    checkDto.getVal(), checkDto.getDate(), checkDto.getNote(), checkDto.getActor().getId(),
-                    checkDto.getIncome() != null ? checkDto.getIncome().getId() : null,
-                    checkDto.getExpense() != null ? checkDto.getExpense().getId() : null);
+                    checkRequest.getVal(), checkRequest.getDate(), checkRequest.getNote(), checkRequest.getActor().getId(),
+                    checkRequest.getIncome() != null ? checkRequest.getIncome().getId() : null,
+                    checkRequest.getExpense() != null ? checkRequest.getExpense().getId() : null);
 
-            return checkDto;
+            return checkRequest;
 
         } catch (Exception ex) {
 
             log.error("!Check not updated, val={}, date={}, note={}, actor={}, income={}, expense={}",
-                    checkDto.getVal(), checkDto.getDate(), checkDto.getNote(), checkDto.getActor().getId(),
-                    checkDto.getIncome() != null ? checkDto.getIncome().getId() : null,
-                    checkDto.getExpense() != null ? checkDto.getExpense().getId() : null);
+                    checkRequest.getVal(), checkRequest.getDate(), checkRequest.getNote(), checkRequest.getActor().getId(),
+                    checkRequest.getIncome() != null ? checkRequest.getIncome().getId() : null,
+                    checkRequest.getExpense() != null ? checkRequest.getExpense().getId() : null);
+
+            return null;
+        }
+    }
+
+    @Override
+    public CheckObjectRequest updateCheckObjectRequest(CheckObjectRequest checkObjectRequest) {
+
+        try {
+            Check check = checkRepo.findById(checkObjectRequest.getId()).orElseThrow();
+            check.setObjectId(checkObjectRequest.getObject());
+
+            checkRepo.save(check);
+
+            log.debug("!Check Object updated successfully id={}, object={}",
+                    checkObjectRequest.getId(), checkObjectRequest.getObject());
+
+            return checkObjectRequest;
+
+        } catch (Exception ex) {
+
+            log.error("!Check Object not updated id={}, object={}",
+                    checkObjectRequest.getId(), checkObjectRequest.getObject());
 
             return null;
         }
@@ -245,6 +279,7 @@ public class CheckServiceImpl implements CheckService {
             checkDto.setIncome(incomeMapper.toDto(check.getIncome()));
             checkDto.setExpense(expenseMapper.toDto(check.getExpense()));
             checkDto.setActor(actorMapper.toDto(check.getActor()));
+            checkDto.setObject(check.getObjectId());
             //Add to checkDtoList
             checkDtoList.add(checkDto);
         }
@@ -270,6 +305,7 @@ public class CheckServiceImpl implements CheckService {
             checkDto.setIncome(incomeMapper.toDto(check.getIncome()));
             checkDto.setExpense(expenseMapper.toDto(check.getExpense()));
             checkDto.setActor(actorMapper.toDto(check.getActor()));
+            checkDto.setObject(check.getObjectId());
             //Add to checkDtoList
             checkDtoList.add(checkDto);
         }
@@ -292,6 +328,7 @@ public class CheckServiceImpl implements CheckService {
             checkDto.setDate(check.getDate());
             checkDto.setNote(check.getNote());
             checkDto.setIncome(incomeMapper.toDto(check.getIncome()));
+            checkDto.setObject(check.getObjectId());
             //Add to checkDtoList
             checkDtoList.add(checkDto);
         }
@@ -314,6 +351,7 @@ public class CheckServiceImpl implements CheckService {
             checkDto.setDate(check.getDate());
             checkDto.setNote(check.getNote());
             checkDto.setIncome(incomeMapper.toDto(check.getIncome()));
+            checkDto.setObject(check.getObjectId());
             //Add to checkDtoList
             checkDtoList.add(checkDto);
         }
@@ -336,6 +374,7 @@ public class CheckServiceImpl implements CheckService {
             checkDto.setDate(check.getDate());
             checkDto.setNote(check.getNote());
             checkDto.setExpense(expenseMapper.toDto(check.getExpense()));
+            checkDto.setObject(check.getObjectId());
             //Add to checkDtoList
             checkDtoList.add(checkDto);
         }
@@ -358,6 +397,7 @@ public class CheckServiceImpl implements CheckService {
             checkDto.setDate(check.getDate());
             checkDto.setNote(check.getNote());
             checkDto.setExpense(expenseMapper.toDto(check.getExpense()));
+            checkDto.setObject(check.getObjectId());
             //Add to checkDtoList
             checkDtoList.add(checkDto);
         }
@@ -380,6 +420,7 @@ public class CheckServiceImpl implements CheckService {
             checkDto.setDate(check.getDate());
             checkDto.setNote(check.getNote());
             checkDto.setActor(actorMapper.toDto(check.getActor()));
+            checkDto.setObject(check.getObjectId());
             //Add to checkDtoList
             checkDtoList.add(checkDto);
         }
@@ -402,6 +443,7 @@ public class CheckServiceImpl implements CheckService {
             checkDto.setDate(check.getDate());
             checkDto.setNote(check.getNote());
             checkDto.setActor(actorMapper.toDto(check.getActor()));
+            checkDto.setObject(check.getObjectId());
             //Add to checkDtoList
             checkDtoList.add(checkDto);
         }

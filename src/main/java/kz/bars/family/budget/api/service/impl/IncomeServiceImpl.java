@@ -44,7 +44,7 @@ public class IncomeServiceImpl implements IncomeService {
             income.setDescription(incomeDto.getDescription());
 
             incomeRepo.save(income);
-            log.debug("!New Income added, name={}, description={}",
+            log.debug("!Income added, name={}, description={}",
                     incomeDto.getName(), incomeDto.getDescription());
 
             return incomeDto;

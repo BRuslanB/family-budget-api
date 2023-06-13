@@ -24,7 +24,7 @@ public class JWTTokenProvider {
         try {
             return extractClaim(token, Claims::getSubject);
         } catch (TokenExpiredException ex) {
-            // Обработка исключения при просроченном или ошибочном токене
+            // Handling an exception for an expired or erroneous token
             throw new TokenExpiredException("Token has expired or invalid token");
         }
     }
@@ -37,7 +37,7 @@ public class JWTTokenProvider {
         try {
             return !isTokenExpired(theToken);
         } catch (TokenExpiredException ex) {
-            // Обработка исключения при просроченном или ошибочном токене
+            // Handling an exception for an expired or erroneous token
             return false;
         }
     }
@@ -47,7 +47,7 @@ public class JWTTokenProvider {
             final Claims claims = extractAllClaims(token);
             return claimsResolver.apply(claims);
         } catch (TokenExpiredException ex) {
-            // Обработка исключения при просроченном или ошибочном токене
+            // Handling an exception for an expired or erroneous token
             throw new TokenExpiredException("Token has expired or invalid token");
         }
     }
@@ -60,7 +60,7 @@ public class JWTTokenProvider {
                     .parseClaimsJws(token)
                     .getBody();
         } catch (ExpiredJwtException | MalformedJwtException ex) {
-            // Обработка исключения при просроченном или ошибочном токене
+            // Handling an exception for an expired or erroneous token
             throw new TokenExpiredException("Token has expired or invalid token");
         }
     }

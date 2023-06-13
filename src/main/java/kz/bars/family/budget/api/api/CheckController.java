@@ -5,7 +5,9 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import kz.bars.family.budget.api.dto.CheckDto;
-import kz.bars.family.budget.api.response.MessageResponse;
+import kz.bars.family.budget.api.payload.request.CheckObjectRequest;
+import kz.bars.family.budget.api.payload.request.CheckRequest;
+import kz.bars.family.budget.api.payload.response.MessageResponse;
 import kz.bars.family.budget.api.service.CheckService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -64,20 +66,37 @@ public class CheckController {
     }
 
     @PutMapping
-    @Operation(description = "Check updated")
-    public ResponseEntity<Object> updateCheck(@RequestBody CheckDto checkDto) {
-        log.debug("!Call method Check updated");
+    @Operation(description = "Check updated without field Object")
+    public ResponseEntity<Object> updateCheck(@RequestBody CheckRequest checkRequest) {
+        log.debug("!Call method Check updated without field Object");
 
         if (SecurityContextHolder.getContext().getAuthentication().isAuthenticated()) {
 
-            if (checkService.updateCheckDto(checkDto) != null) {
-                return ResponseEntity.ok(new MessageResponse("Check updated successfully!"));
+            if (checkService.updateCheckRequest(checkRequest) != null) {
+                return ResponseEntity.ok(new MessageResponse("Check updated without field Object successfully!"));
             }
 
         } else {
             return new ResponseEntity<>(new MessageResponse("Access denied"), HttpStatus.BAD_REQUEST);
         }
         return new ResponseEntity<>(new MessageResponse("Check not updated"), HttpStatus.BAD_REQUEST);
+    }
+
+    @PutMapping(value = "object")
+    @Operation(description = "Check Object updated")
+    public ResponseEntity<Object> updateCheckObject(@RequestBody CheckObjectRequest checkObjectRequest) {
+        log.debug("!Call method Check Object updated");
+
+        if (SecurityContextHolder.getContext().getAuthentication().isAuthenticated()) {
+
+            if (checkService.updateCheckObjectRequest(checkObjectRequest) != null) {
+                return ResponseEntity.ok(new MessageResponse("Check Object updated successfully!"));
+            }
+
+        } else {
+            return new ResponseEntity<>(new MessageResponse("Access denied"), HttpStatus.BAD_REQUEST);
+        }
+        return new ResponseEntity<>(new MessageResponse("Check Object not updated"), HttpStatus.BAD_REQUEST);
     }
 
     @DeleteMapping(value = "{id}")
@@ -108,7 +127,7 @@ public class CheckController {
             List<CheckDto> checkDtoList = checkService.getAllCheckDto();
             return ResponseEntity.ok(checkDtoList);
         }
-        return new ResponseEntity<>(new MessageResponse("Check list empty"), HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(new MessageResponse("Check list not found"), HttpStatus.BAD_REQUEST);
     }
 
     @GetMapping(value = "dates/{date1}/{date2}")
@@ -124,7 +143,7 @@ public class CheckController {
             List<CheckDto> checkDtoList = checkService.getAllCheckDtoBetweenDate(dateFrom, dateTo);
             return ResponseEntity.ok(checkDtoList);
         }
-        return new ResponseEntity<>(new MessageResponse("Check list for the period empty"), HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(new MessageResponse("Check list for the period not found"), HttpStatus.BAD_REQUEST);
     }
 
     @GetMapping(value = "incomes/{id}")
@@ -138,7 +157,7 @@ public class CheckController {
             List<CheckDto> checkDtoList = checkService.getAllCheckDtoByIncomeId(id);
             return ResponseEntity.ok(checkDtoList);
         }
-        return new ResponseEntity<>(new MessageResponse("Check list for a given Income empty"), HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(new MessageResponse("Check list for a given Income not found"), HttpStatus.BAD_REQUEST);
     }
 
     @GetMapping(value = "incomes/{id}/dates/{date1}/{date2}")
@@ -156,7 +175,7 @@ public class CheckController {
             List<CheckDto> checkDtoList = checkService.getAllCheckDtoByIncomeBetweenDate(id, dateFrom, dateTo);
             return ResponseEntity.ok(checkDtoList);
         }
-        return new ResponseEntity<>(new MessageResponse("Check list for a given Income for the period empty"), HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(new MessageResponse("Check list for a given Income for the period not found"), HttpStatus.BAD_REQUEST);
     }
 
     @GetMapping(value = "expenses/{id}")
@@ -170,7 +189,7 @@ public class CheckController {
             List<CheckDto> checkDtoList = checkService.getAllCheckDtoByExpenseId(id);
             return ResponseEntity.ok(checkDtoList);
         }
-        return new ResponseEntity<>(new MessageResponse("Check list for a given Expense"), HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(new MessageResponse("Check list for a given Expense not found"), HttpStatus.BAD_REQUEST);
     }
 
     @GetMapping(value = "expenses/{id}/dates/{date1}/{date2}")
@@ -188,7 +207,7 @@ public class CheckController {
             List<CheckDto> checkDtoList = checkService.getAllCheckDtoByExpenseBetweenDate(id, dateFrom, dateTo);
             return ResponseEntity.ok(checkDtoList);
         }
-        return new ResponseEntity<>(new MessageResponse("Check list for a given Expense for the period empty"), HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(new MessageResponse("Check list for a given Expense for the period not found"), HttpStatus.BAD_REQUEST);
     }
 
     @GetMapping(value = "actors/{id}")
@@ -202,7 +221,7 @@ public class CheckController {
             List<CheckDto> checkDtoList = checkService.getAllCheckDtoByActorId(id);
             return ResponseEntity.ok(checkDtoList);
         }
-        return new ResponseEntity<>(new MessageResponse("Check list for a given Actor"), HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(new MessageResponse("Check list for a given Actor not found"), HttpStatus.BAD_REQUEST);
     }
 
     @GetMapping(value = "actors/{id}/dates/{date1}/{date2}")
@@ -220,7 +239,7 @@ public class CheckController {
             List<CheckDto> checkDtoList = checkService.getAllCheckDtoByActorBetweenDate(id, dateFrom, dateTo);
             return ResponseEntity.ok(checkDtoList);
         }
-        return new ResponseEntity<>(new MessageResponse("Check list for a given Actor for the period empty"), HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(new MessageResponse("Check list for a given Actor for the period not found"), HttpStatus.BAD_REQUEST);
     }
 
 }
