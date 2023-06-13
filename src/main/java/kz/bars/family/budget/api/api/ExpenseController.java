@@ -6,7 +6,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import kz.bars.family.budget.api.dto.ExpenseDto;
 import kz.bars.family.budget.api.dto.ExpenseSumDto;
-import kz.bars.family.budget.api.response.MessageResponse;
+import kz.bars.family.budget.api.payload.response.MessageResponse;
 import kz.bars.family.budget.api.service.ExpenseService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -59,7 +59,7 @@ public class ExpenseController {
             List<ExpenseSumDto> expenseSumDto = expenseService.getAllExpenseDto();
             return ResponseEntity.ok(expenseSumDto);
         }
-        return new ResponseEntity<>(new MessageResponse("Expense list empty"), HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(new MessageResponse("Expense list not found"), HttpStatus.BAD_REQUEST);
     }
 
     @GetMapping(value = "dates/{date1}/{date2}")
@@ -76,7 +76,7 @@ public class ExpenseController {
             List<ExpenseSumDto> expenseSumDto = expenseService.getAllExpenseDtoBetweenDate(dateFrom, dateTo);
             return ResponseEntity.ok(expenseSumDto);
         }
-        return new ResponseEntity<>(new MessageResponse("Expense list for the period empty"), HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(new MessageResponse("Expense list for the period not found"), HttpStatus.BAD_REQUEST);
     }
 
     @PostMapping

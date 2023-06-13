@@ -38,7 +38,7 @@ public class ExpenseCategoryServiceImpl implements ExpenseCategoryService {
             expenseCategory.setDescription(expenseCategoryDto.getDescription());
 
             expenseCategoryRepo.save(expenseCategory);
-            log.debug("!New Expense Category added, name={}, description={}",
+            log.debug("!Expense Category added, name={}, description={}",
                     expenseCategoryDto.getName(), expenseCategoryDto.getDescription());
             return expenseCategoryDto;
 

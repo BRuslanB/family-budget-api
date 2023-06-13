@@ -6,7 +6,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import kz.bars.family.budget.api.dto.IncomeDto;
 import kz.bars.family.budget.api.dto.IncomeSumDto;
-import kz.bars.family.budget.api.response.MessageResponse;
+import kz.bars.family.budget.api.payload.response.MessageResponse;
 import kz.bars.family.budget.api.service.IncomeService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -59,7 +59,7 @@ public class IncomeController {
             List<IncomeSumDto> incomeSumDto = incomeService.getAllIncomeDto();
             return ResponseEntity.ok(incomeSumDto);
         }
-        return new ResponseEntity<>(new MessageResponse("Income list empty"), HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(new MessageResponse("Income list not found"), HttpStatus.BAD_REQUEST);
     }
 
     @GetMapping(value = "dates/{date1}/{date2}")
@@ -76,7 +76,7 @@ public class IncomeController {
             List<IncomeSumDto> incomeSumDto = incomeService.getAllIncomeDtoBetweenDate(dateFrom, dateTo);
             return ResponseEntity.ok(incomeSumDto);
         }
-        return new ResponseEntity<>(new MessageResponse("Income list for the period empty"), HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(new MessageResponse("Income list for the period not found"), HttpStatus.BAD_REQUEST);
     }
 
     @PostMapping

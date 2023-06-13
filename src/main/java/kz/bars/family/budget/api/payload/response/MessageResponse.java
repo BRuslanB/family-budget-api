@@ -1,4 +1,4 @@
-package kz.bars.family.budget.api.response;
+package kz.bars.family.budget.api.payload.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

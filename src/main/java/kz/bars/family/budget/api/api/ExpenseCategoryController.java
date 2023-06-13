@@ -5,7 +5,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import kz.bars.family.budget.api.dto.ExpenseCategoryDto;
-import kz.bars.family.budget.api.response.MessageResponse;
+import kz.bars.family.budget.api.payload.response.MessageResponse;
 import kz.bars.family.budget.api.service.ExpenseCategoryService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -57,7 +57,7 @@ public class ExpenseCategoryController {
             List<ExpenseCategoryDto> expenseCategoryDto = expenseCategoryService.getAllExpenseCategoryDto();
             return ResponseEntity.ok(expenseCategoryDto);
         }
-        return new ResponseEntity<>(new MessageResponse("Expense Category list empty"), HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(new MessageResponse("Expense Category list not found"), HttpStatus.BAD_REQUEST);
     }
 
     @PostMapping
