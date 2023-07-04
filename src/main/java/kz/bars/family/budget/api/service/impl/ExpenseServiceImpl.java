@@ -30,10 +30,38 @@ public class ExpenseServiceImpl implements ExpenseService {
 
     @Override
     public ExpenseDto getExpenseDto(Long id) {
+
         Expense expense = expenseRepo.findById(id).orElse(null);
-        log.debug("!Getting a Expense, id={}", id);
+
+        if (expense != null) {
+            log.debug("!Getting a Expense: id={}", id);
+        } else {
+            log.error("!Expense not found: id={}", id);
+        }
 
         return expenseMapper.toDto(expense);
+    }
+
+    @Override
+    public List<ExpenseDto> getAllExpenseDto() {
+
+        List<Expense> expenseList;
+        expenseList = expenseRepo.findAll();
+
+        List<ExpenseDto> expenseDtoList = new ArrayList<>();
+        ExpenseDto expenseDto;
+        for (Expense expense : expenseList) {
+            expenseDto = new ExpenseDto();
+            expenseDto.setId(expense.getId());
+            expenseDto.setName(expense.getName());
+            expenseDto.setDescription(expense.getDescription());
+            expenseDto.setCategory(expenseCategoryMapper.toDto(expense.getCategory()));
+            //Add to expenseDtoList
+            expenseDtoList.add(expenseDto);
+        }
+        log.debug("!Getting a list of All Expenses");
+
+        return expenseDtoList;
     }
 
     @Override
@@ -46,7 +74,7 @@ public class ExpenseServiceImpl implements ExpenseService {
             expense.setCategory(expenseCategoryMapper.toEntity(expenseDto.getCategory()));
 
             expenseRepo.save(expense);
-            log.debug("!Expense added, name={}, description={}, category={}",
+            log.debug("!Expense added: name={}, description={}, category={}",
                     expenseDto.getName(), expenseDto.getDescription(),
                     expenseDto.getCategory() !=null ? expenseDto.getCategory().getId() : null);
 
@@ -54,7 +82,7 @@ public class ExpenseServiceImpl implements ExpenseService {
 
         } catch (Exception ex) {
 
-            log.error("!Expense not added, name={}, description={}, category={}",
+            log.error("!Expense not added: name={}, description={}, category={}",
                     expenseDto.getName(), expenseDto.getDescription(),
                     expenseDto.getCategory() !=null ? expenseDto.getCategory().getId() : null);
 
@@ -73,7 +101,7 @@ public class ExpenseServiceImpl implements ExpenseService {
 
             expenseRepo.save(expense);
 
-            log.debug("!Expense updated successfully id={}, name={}, description={}, category={}",
+            log.debug("!Expense updated successfully: id={}, name={}, description={}, category={}",
                     expenseDto.getId(), expenseDto.getName(), expenseDto.getDescription(),
                     expenseDto.getCategory() !=null ? expenseDto.getCategory().getId() : null);
 
@@ -81,7 +109,7 @@ public class ExpenseServiceImpl implements ExpenseService {
 
         } catch (Exception ex) {
 
-            log.error("!Expense not updated, id={}, name={}, description={}, category={}",
+            log.error("!Expense not updated: id={}, name={}, description={}, category={}",
                     expenseDto.getId(), expenseDto.getName(), expenseDto.getDescription(),
                     expenseDto.getCategory() !=null ? expenseDto.getCategory().getId() : null);
 
@@ -104,18 +132,19 @@ public class ExpenseServiceImpl implements ExpenseService {
                 checkService.updateBudget();
             }
 
-            log.debug("!Expense removed, id={}", id);
+            log.debug("!Expense removed: id={}", id);
             return id;
 
         } catch (Exception ex){
 
-            log.error("!Expense not removed, id={}", id);
+            log.error("!Expense not removed: id={}", id);
             return null;
         }
     }
 
     @Override
-    public List<ExpenseSumDto> getAllExpenseDto() {
+    public List<ExpenseSumDto> getAllExpenseSumDto() {
+
         List<Expense> expenseList;
         expenseList = expenseRepo.findAll();
 
@@ -130,19 +159,22 @@ public class ExpenseServiceImpl implements ExpenseService {
             // Count Value
             var sum = 0.0;
             for (Check check : expense.getChecks()) {
-                sum += check.getVal();
+                if (check.getIncome() == null) {
+                    sum += check.getVal();
+                }
             }
             expenseSumDto.setSumVal(Math.round(sum * 100.0) / 100.0);
             //Add to expenseDtoList
             expenseSumDtoList.add(expenseSumDto);
         }
-        log.debug("!Getting a list of All Expenses");
+        log.debug("!Getting a list of All Expenses with sum");
 
         return expenseSumDtoList;
     }
 
     @Override
-    public List<ExpenseSumDto> getAllExpenseDtoBetweenDate(LocalDate dateFrom, LocalDate dateTo) {
+    public List<ExpenseSumDto> getAllExpenseSumDtoBetweenDate(LocalDate dateFrom, LocalDate dateTo) {
+
         List<Expense> expenseList;
         expenseList = expenseRepo.findAllByChecksBetweenDateOrderByDate(dateFrom, dateTo);
 
@@ -158,14 +190,16 @@ public class ExpenseServiceImpl implements ExpenseService {
             var sum = 0.0;
             for (Check check : expense.getChecks()) {
                 if (check.getDate().compareTo(dateFrom) >= 0 && check.getDate().compareTo(dateTo) <= 0) {
-                    sum += check.getVal();
+                    if (check.getIncome() == null) {
+                        sum += check.getVal();
+                    }
                 }
             }
             expenseSumDto.setSumVal(Math.round(sum * 100.0) / 100.0);
             //Add to expenseDtoList
             expenseSumDtoList.add(expenseSumDto);
         }
-        log.debug("!Getting a list of Expenses for the period from {} to {}", dateFrom, dateTo);
+        log.debug("!Getting a list of Expenses with sum for the period from {} to {}", dateFrom, dateTo);
 
         return expenseSumDtoList;
     }

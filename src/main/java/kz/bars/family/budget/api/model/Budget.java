@@ -17,8 +17,4 @@ public class Budget extends BaseEntity {
     @Column(nullable = false)
     private LocalDate date;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "actor_id", foreignKey = @ForeignKey(name = "budget_actor_id_fk"))
-    private Actor actor;
-
 }

@@ -36,6 +36,7 @@ public class ExpenseController {
     @Operation(description = "Getting a Expense..")
     public ResponseEntity<Object> getExpense(@Parameter(description = "'expense' id")
                                              @PathVariable(name = "id") Long id) {
+
         log.debug("!Call method getting a Expense");
 
         if (SecurityContextHolder.getContext().getAuthentication().isAuthenticated()) {
@@ -52,37 +53,55 @@ public class ExpenseController {
     @PreAuthorize("isAuthenticated()")
     @Operation(description = "Getting a list of All Expenses")
     public ResponseEntity<Object> getAllExpense() {
+
         log.debug("!Call method getting a list of All Expenses");
 
         if (SecurityContextHolder.getContext().getAuthentication().isAuthenticated()) {
 
-            List<ExpenseSumDto> expenseSumDto = expenseService.getAllExpenseDto();
-            return ResponseEntity.ok(expenseSumDto);
+            List<ExpenseDto> expenseDto = expenseService.getAllExpenseDto();
+            return ResponseEntity.ok(expenseDto);
         }
         return new ResponseEntity<>(new MessageResponse("Expense list not found"), HttpStatus.BAD_REQUEST);
     }
 
+    @GetMapping(value = "sum")
+    @PreAuthorize("isAuthenticated()")
+    @Operation(description = "Getting a list of All Expenses with sum")
+    public ResponseEntity<Object> getAllExpenseSum() {
+
+        log.debug("!Call method getting a list of All Expenses with sum");
+
+        if (SecurityContextHolder.getContext().getAuthentication().isAuthenticated()) {
+
+            List<ExpenseSumDto> expenseSumDto = expenseService.getAllExpenseSumDto();
+            return ResponseEntity.ok(expenseSumDto);
+        }
+        return new ResponseEntity<>(new MessageResponse("Expense with sum list not found"), HttpStatus.BAD_REQUEST);
+    }
+
     @GetMapping(value = "dates/{date1}/{date2}")
     @PreAuthorize("isAuthenticated()")
-    @Operation(description = "Getting a list of Expenses for the period from.. to..")
+    @Operation(description = "Getting a list of Expenses with sum for the period from.. to..")
     public ResponseEntity<Object> getAllExpenseBetweenDate(@Parameter(description = "date 'from'")
                                                            @PathVariable(name = "date1") LocalDate dateFrom,
                                                            @Parameter(description = "date 'to'")
                                                            @PathVariable(name = "date2") LocalDate dateTo) {
-        log.debug("!Call method getting a list of Expenses for the period");
+
+        log.debug("!Call method getting a list of Expenses with sum for the period");
 
         if (SecurityContextHolder.getContext().getAuthentication().isAuthenticated()) {
 
-            List<ExpenseSumDto> expenseSumDto = expenseService.getAllExpenseDtoBetweenDate(dateFrom, dateTo);
+            List<ExpenseSumDto> expenseSumDto = expenseService.getAllExpenseSumDtoBetweenDate(dateFrom, dateTo);
             return ResponseEntity.ok(expenseSumDto);
         }
-        return new ResponseEntity<>(new MessageResponse("Expense list for the period not found"), HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(new MessageResponse("Expense with sum list for the period not found"), HttpStatus.BAD_REQUEST);
     }
 
     @PostMapping
     @PreAuthorize("hasAuthority('ROLE_ADMIN')") //не работает почему то
     @Operation(description = "Expense added")
     public ResponseEntity<Object> addExpense(@RequestBody ExpenseDto expenseDto) {
+
         log.debug("!Call method Expense added");
 
         if (SecurityContextHolder.getContext().getAuthentication().isAuthenticated()) {
@@ -105,6 +124,7 @@ public class ExpenseController {
     @PreAuthorize("hasAuthority('ROLE_ADMIN')") //не работает почему то
     @Operation(description = "Expense updated")
     public ResponseEntity<Object> updateExpense(@RequestBody ExpenseDto expenseDto) {
+
         log.debug("!Call method Expense updated");
 
         if (SecurityContextHolder.getContext().getAuthentication().isAuthenticated()) {
@@ -128,6 +148,7 @@ public class ExpenseController {
     @Operation(description = "Expense.. removed")
     public ResponseEntity<Object> deleteExpense(@Parameter(description = "'expense' id")
                                                 @PathVariable(name = "id") Long id) {
+
         log.debug("!Call method Expense removed");
 
         if (SecurityContextHolder.getContext().getAuthentication().isAuthenticated()) {

@@ -8,15 +8,11 @@ import java.util.List;
 
 public interface ExpenseService {
     ExpenseDto getExpenseDto(Long id);
-
+    List<ExpenseDto> getAllExpenseDto();
     ExpenseDto addExpenseDto(ExpenseDto expenseDto);
-
     ExpenseDto updateExpenseDto(ExpenseDto expenseDto);
-
     Long deleteExpenseDto(Long id);
-
-    List<ExpenseSumDto> getAllExpenseDto();
-
-    List<ExpenseSumDto> getAllExpenseDtoBetweenDate(LocalDate dateFrom, LocalDate dateTo);
+    List<ExpenseSumDto> getAllExpenseSumDto();
+    List<ExpenseSumDto> getAllExpenseSumDtoBetweenDate(LocalDate dateFrom, LocalDate dateTo);
 
 }

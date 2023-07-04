@@ -8,10 +8,11 @@ import java.util.List;
 
 public interface IncomeService {
     IncomeDto getIncomeDto(Long id);
+    List<IncomeDto> getAllIncomeDto();
     IncomeDto addIncomeDto(IncomeDto incomeDto);
     IncomeDto updateIncomeDto(IncomeDto incomeDto);
     Long deleteIncomeDto(Long id);
-    List<IncomeSumDto> getAllIncomeDto();
-    List<IncomeSumDto> getAllIncomeDtoBetweenDate(LocalDate dateFrom, LocalDate dateTo);
+    List<IncomeSumDto> getAllIncomeSumDto();
+    List<IncomeSumDto> getAllIncomeSumDtoBetweenDate(LocalDate dateFrom, LocalDate dateTo);
 
 }

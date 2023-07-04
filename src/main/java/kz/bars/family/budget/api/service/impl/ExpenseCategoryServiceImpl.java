@@ -24,7 +24,12 @@ public class ExpenseCategoryServiceImpl implements ExpenseCategoryService {
     public ExpenseCategoryDto getExpenseCategoryDto(Long id) {
 
         ExpenseCategory expenseCategory = expenseCategoryRepo.findById(id).orElse(null);
-        log.debug("!Getting a Expense Category, id={}", id);
+
+        if (expenseCategory != null) {
+            log.debug("!Getting a Expense Category: id={}", id);
+        } else {
+            log.error("!Expense Category not found: id={}", id);
+        }
 
         return expenseCategoryMapper.toDto(expenseCategory);
     }
@@ -38,13 +43,13 @@ public class ExpenseCategoryServiceImpl implements ExpenseCategoryService {
             expenseCategory.setDescription(expenseCategoryDto.getDescription());
 
             expenseCategoryRepo.save(expenseCategory);
-            log.debug("!Expense Category added, name={}, description={}",
+            log.debug("!Expense Category added: name={}, description={}",
                     expenseCategoryDto.getName(), expenseCategoryDto.getDescription());
             return expenseCategoryDto;
 
         } catch (Exception ex) {
 
-            log.error("!Expense Category not added, name={}, description={}",
+            log.error("!Expense Category not added: name={}, description={}",
                     expenseCategoryDto.getName(), expenseCategoryDto.getDescription());
             return null;
         }
@@ -59,13 +64,13 @@ public class ExpenseCategoryServiceImpl implements ExpenseCategoryService {
             expenseCategory.setDescription(expenseCategoryDto.getDescription());
 
             expenseCategoryRepo.save(expenseCategory);
-            log.debug("!Expense Category updated successfully id={}, name={}, description={}",
+            log.debug("!Expense Category updated successfully: id={}, name={}, description={}",
                     expenseCategoryDto.getId(), expenseCategoryDto.getName(), expenseCategoryDto.getDescription());
             return expenseCategoryDto;
 
         } catch (Exception ex) {
 
-            log.error("!Expense Category not updated, id={}, name={}, description={}",
+            log.error("!Expense Category not updated: id={}, name={}, description={}",
                     expenseCategoryDto.getId(), expenseCategoryDto.getName(), expenseCategoryDto.getDescription());
             return null;
         }
@@ -76,12 +81,12 @@ public class ExpenseCategoryServiceImpl implements ExpenseCategoryService {
 
         try {
             expenseCategoryRepo.deleteById(id);
-            log.debug("!Expense Category removed, id={}", id);
+            log.debug("!Expense Category removed: id={}", id);
             return id;
 
         } catch (Exception ex) {
 
-            log.error("!Expense Category not removed, id={}", id);
+            log.error("!Expense Category not removed: id={}", id);
             return null;
         }
     }
@@ -91,17 +96,11 @@ public class ExpenseCategoryServiceImpl implements ExpenseCategoryService {
 
         List<ExpenseCategory> expenseCategoryList;
         expenseCategoryList = expenseCategoryRepo.findAll();
-
         List<ExpenseCategoryDto> expenseCategoryDtoList = new ArrayList<>();
-        ExpenseCategoryDto expenseCategoryDto;
 
         for (ExpenseCategory expenseCategory : expenseCategoryList) {
-            expenseCategoryDto = new ExpenseCategoryDto();
-            expenseCategoryDto.setId(expenseCategory.getId());
-            expenseCategoryDto.setName(expenseCategory.getName());
-            expenseCategoryDto.setDescription(expenseCategory.getDescription());
             //Add to expenseDtoList
-            expenseCategoryDtoList.add(expenseCategoryDto);
+            expenseCategoryDtoList.add(expenseCategoryMapper.toDto(expenseCategory));
         }
         log.debug("!Getting a list of All Expense Categories");
 

@@ -22,5 +22,6 @@ public interface CheckService {
     List<CheckDto> getAllCheckDtoByExpenseBetweenDate(Long id, LocalDate dateFrom, LocalDate dateTo);
     List<CheckDto> getAllCheckDtoByActorId(Long id);
     List<CheckDto> getAllCheckDtoByActorBetweenDate(Long id, LocalDate dateFrom, LocalDate dateTo);
+    List<CheckDto> getAllCheckDtoByDate(LocalDate checkDate);
 
 }

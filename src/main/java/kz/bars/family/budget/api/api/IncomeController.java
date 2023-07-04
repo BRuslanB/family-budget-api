@@ -36,6 +36,7 @@ public class IncomeController {
     @Operation(description = "Getting a Income..")
     public ResponseEntity<Object> getIncome(@Parameter(description = "'income' id")
                                             @PathVariable(name = "id") Long id) {
+
         log.debug("!Call method getting a Income");
 
         if (SecurityContextHolder.getContext().getAuthentication().isAuthenticated()) {
@@ -52,37 +53,55 @@ public class IncomeController {
     @PreAuthorize("isAuthenticated()")
     @Operation(description = "Getting a list of All Incomes")
     public ResponseEntity<Object> getAllIncome() {
+
         log.debug("!Getting a list of All Incomes");
 
         if (SecurityContextHolder.getContext().getAuthentication().isAuthenticated()) {
 
-            List<IncomeSumDto> incomeSumDto = incomeService.getAllIncomeDto();
-            return ResponseEntity.ok(incomeSumDto);
+            List<IncomeDto> incomeDto = incomeService.getAllIncomeDto();
+            return ResponseEntity.ok(incomeDto);
         }
         return new ResponseEntity<>(new MessageResponse("Income list not found"), HttpStatus.BAD_REQUEST);
     }
 
-    @GetMapping(value = "dates/{date1}/{date2}")
+    @GetMapping(value = "sum")
     @PreAuthorize("isAuthenticated()")
-    @Operation(description = "Getting a list of Incomes for the period from.. to..")
-    public ResponseEntity<Object> getAllIncomeBetweenDate(@Parameter(description = "date 'from'")
-                                                          @PathVariable(name = "date1") LocalDate dateFrom,
-                                                          @Parameter(description = "date 'to'")
-                                                          @PathVariable(name = "date2") LocalDate dateTo) {
-        log.debug("!Getting a list of Incomes for the period");
+    @Operation(description = "Getting a list of All Incomes with sum")
+    public ResponseEntity<Object> getAllIncomeSum() {
+
+        log.debug("!Getting a list of All Incomes with sum");
 
         if (SecurityContextHolder.getContext().getAuthentication().isAuthenticated()) {
 
-            List<IncomeSumDto> incomeSumDto = incomeService.getAllIncomeDtoBetweenDate(dateFrom, dateTo);
+            List<IncomeSumDto> incomeSumDto = incomeService.getAllIncomeSumDto();
             return ResponseEntity.ok(incomeSumDto);
         }
-        return new ResponseEntity<>(new MessageResponse("Income list for the period not found"), HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(new MessageResponse("Income with sum list not found"), HttpStatus.BAD_REQUEST);
+    }
+
+    @GetMapping(value = "dates/{date1}/{date2}")
+    @PreAuthorize("isAuthenticated()")
+    @Operation(description = "Getting a list of Incomes with sum for the period from.. to..")
+    public ResponseEntity<Object> getAllIncomeSumBetweenDate(@Parameter(description = "date 'from'")
+                                                          @PathVariable(name = "date1") LocalDate dateFrom,
+                                                          @Parameter(description = "date 'to'")
+                                                          @PathVariable(name = "date2") LocalDate dateTo) {
+
+        log.debug("!Getting a list of Incomes with sum for the period");
+
+        if (SecurityContextHolder.getContext().getAuthentication().isAuthenticated()) {
+
+            List<IncomeSumDto> incomeSumDto = incomeService.getAllIncomeSumDtoBetweenDate(dateFrom, dateTo);
+            return ResponseEntity.ok(incomeSumDto);
+        }
+        return new ResponseEntity<>(new MessageResponse("Income with sum list for the period not found"), HttpStatus.BAD_REQUEST);
     }
 
     @PostMapping
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @Operation(description = "Income added")
     public ResponseEntity<Object> addIncome(@RequestBody IncomeDto incomeDto) {
+
         log.debug("!Call method Income added");
 
         if (SecurityContextHolder.getContext().getAuthentication().isAuthenticated()) {
@@ -105,6 +124,7 @@ public class IncomeController {
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @Operation(description = "Income updated")
     public ResponseEntity<Object> updateIncome(@RequestBody IncomeDto incomeDto) {
+
         log.debug("!Call method Income updated");
 
         if (SecurityContextHolder.getContext().getAuthentication().isAuthenticated()) {
@@ -128,6 +148,7 @@ public class IncomeController {
     @Operation(description = "Income.. removed")
     public ResponseEntity<Object> deleteIncome(@Parameter(description = "'income' id")
                                                @PathVariable(name = "id") Long id) {
+
         log.debug("!Call method Income removed");
 
         if (SecurityContextHolder.getContext().getAuthentication().isAuthenticated()) {
