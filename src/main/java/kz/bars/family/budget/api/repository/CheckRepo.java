@@ -13,6 +13,7 @@ import java.util.List;
 @Transactional
 public interface CheckRepo extends JpaRepository<Check, Long> {
 
+    List<Check> findAllByDate(LocalDate date);
     List<Check> findAllByDateBetweenOrderByDate(LocalDate date1, LocalDate date2);
     List<Check> findAllByIncomeIdOrderByDate(Long id);
     List<Check> findAllByIncomeIdAndDateBetweenOrderByDate(Long id, LocalDate date1, LocalDate date2);
@@ -20,10 +21,7 @@ public interface CheckRepo extends JpaRepository<Check, Long> {
     List<Check> findAllByExpenseIdAndDateBetweenOrderByDate(Long id, LocalDate date1, LocalDate date2);
     List<Check> findAllByActorIdOrderByDate(Long id);
     List<Check> findAllByActorIdAndDateBetweenOrderByDate(Long id, LocalDate date1, LocalDate date2);
-    List<Check> findAllByActorIdAndDate(Long id, LocalDate date);
-
-    @Query("SELECT c FROM Check c WHERE (c.actor.id, c.date) IN " +
-            "(SELECT c2.actor.id, c2.date FROM Check c2 GROUP BY c2.actor.id, c2.date)")
-    List<Check> findDistinctByActorIdAndDate();
+    @Query("SELECT c FROM Check c WHERE (c.date) IN (SELECT c2.date FROM Check c2 GROUP BY c2.date)")
+    List<Check> findDistinctByDate();
 
 }

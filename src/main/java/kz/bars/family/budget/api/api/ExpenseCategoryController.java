@@ -24,7 +24,7 @@ import java.util.List;
 @CrossOrigin
 @Log4j2
 @SecurityRequirement(name = "family-budget-api")
-@Tag(name = "Expense", description = "All methods for getting a list of Expense Categories")
+@Tag(name = "Category", description = "All methods for getting a list of Expense Categories")
 public class ExpenseCategoryController {
 
     private final ExpenseCategoryService expenseCategoryService;
@@ -34,6 +34,7 @@ public class ExpenseCategoryController {
     @Operation(description = "Getting a Expense Category..")
     public ResponseEntity<Object> getExpenseCategory(@Parameter(description = "'expense category' id")
                                                      @PathVariable(name = "id") Long id) {
+
         log.debug("!Call method getting a Expense Category");
 
         if (SecurityContextHolder.getContext().getAuthentication().isAuthenticated()) {
@@ -50,6 +51,7 @@ public class ExpenseCategoryController {
     @PreAuthorize("isAuthenticated()")
     @Operation(description = "Getting a list of All Expense Categories")
     public ResponseEntity<Object> getAllExpenseCategory() {
+
         log.debug("!Call method getting a list of All Expense Categories");
 
         if (SecurityContextHolder.getContext().getAuthentication().isAuthenticated()) {
@@ -64,6 +66,7 @@ public class ExpenseCategoryController {
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @Operation(description = "Expense Category added")
     public ResponseEntity<Object> addExpenseCategory(@RequestBody ExpenseCategoryDto expenseCategoryDto) {
+
         log.debug("!Call method Expense Category added");
 
         if (SecurityContextHolder.getContext().getAuthentication().isAuthenticated()) {
@@ -86,6 +89,7 @@ public class ExpenseCategoryController {
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @Operation(description = "Expense Category updated")
     public ResponseEntity<Object> updateExpenseCategory(@RequestBody ExpenseCategoryDto expenseCategoryDto) {
+
         log.debug("!Call method Expense Category updated");
 
         if (SecurityContextHolder.getContext().getAuthentication().isAuthenticated()) {
@@ -109,6 +113,7 @@ public class ExpenseCategoryController {
     @Operation(description = "Expense Category.. removed")
     public ResponseEntity<Object> deleteExpenseCategory(@Parameter(description = "'expense category' id")
                                                         @PathVariable(name = "id") Long id) {
+
         log.debug("!Call method Expense Category removed");
 
         if (SecurityContextHolder.getContext().getAuthentication().isAuthenticated()) {

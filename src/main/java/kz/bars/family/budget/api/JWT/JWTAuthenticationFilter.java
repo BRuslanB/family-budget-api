@@ -9,7 +9,6 @@ import kz.bars.family.budget.api.exeption.UserNotFoundException;
 import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -18,7 +17,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.Set;
 
 @Component
 @AllArgsConstructor
@@ -56,12 +54,8 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
                             userDetails.getAuthorities());
                     authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(authToken);
-
-                    log.debug("!Authentication User name: " + SecurityContextHolder.getContext().getAuthentication().getName());
-                    Set<String> roles = AuthorityUtils.authorityListToSet(SecurityContextHolder.getContext().getAuthentication().getAuthorities());
-                    log.debug("!Authentication User roles: " + roles);
-
                 }
+
             } catch (UserNotFoundException ignored) {
             }
         }

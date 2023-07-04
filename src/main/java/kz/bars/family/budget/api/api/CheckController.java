@@ -130,6 +130,20 @@ public class CheckController {
         return new ResponseEntity<>(new MessageResponse("Check list not found"), HttpStatus.BAD_REQUEST);
     }
 
+    @GetMapping(value = "date/{date}")
+    @Operation(description = "Getting a list of Checks for a given Date..")
+    public ResponseEntity<Object> getAllCheckDate(@Parameter(description = "date")
+                                                  @PathVariable(name = "date") LocalDate date) {
+        log.debug("!Call method getting a list of Checks for a given Date");
+
+        if (SecurityContextHolder.getContext().getAuthentication().isAuthenticated()) {
+
+            List<CheckDto> checkDtoList = checkService.getAllCheckDtoByDate(date);
+            return ResponseEntity.ok(checkDtoList);
+        }
+        return new ResponseEntity<>(new MessageResponse("Check list for a given Date not found"), HttpStatus.BAD_REQUEST);
+    }
+
     @GetMapping(value = "dates/{date1}/{date2}")
     @Operation(description = "Getting a list of Checks for the period from.. to..")
     public ResponseEntity<Object> getAllCheckBetweenDate(@Parameter(description = "date 'from'")

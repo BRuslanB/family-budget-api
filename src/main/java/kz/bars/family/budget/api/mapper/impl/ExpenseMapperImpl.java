@@ -1,12 +1,9 @@
 package kz.bars.family.budget.api.mapper.impl;
 
 import kz.bars.family.budget.api.dto.ExpenseDto;
-import kz.bars.family.budget.api.dto.IncomeDto;
 import kz.bars.family.budget.api.mapper.ExpenseCategoryMapper;
 import kz.bars.family.budget.api.mapper.ExpenseMapper;
-import kz.bars.family.budget.api.mapper.IncomeMapper;
 import kz.bars.family.budget.api.model.Expense;
-import kz.bars.family.budget.api.model.Income;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 

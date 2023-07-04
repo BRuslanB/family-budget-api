@@ -24,13 +24,7 @@ ALTER TABLE checks
         FOREIGN KEY (actor_id) REFERENCES actor(id);
 
 ALTER TABLE budget
-    DROP CONSTRAINT IF EXISTS budget_actor_id_fk;
-ALTER TABLE budget
-    ADD CONSTRAINT budget_actor_id_fk
-        FOREIGN KEY (actor_id) REFERENCES actor(id);
-
-ALTER TABLE budget
     DROP CONSTRAINT IF EXISTS budget_pk;
 ALTER TABLE budget
     ADD CONSTRAINT budget_pk
-        UNIQUE (date, actor_id);
+        UNIQUE (date);

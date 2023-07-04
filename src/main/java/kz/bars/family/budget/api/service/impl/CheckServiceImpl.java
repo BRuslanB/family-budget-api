@@ -77,7 +77,7 @@ public class CheckServiceImpl implements CheckService {
             actorRepo.findById(checkDto.getActor().getId()).ifPresent(check::setActor);
 
             checkRepo.save(check);
-            updateBudget(checkDto.getActor().getId(), checkDto.getDate());
+            updateBudget(checkDto.getDate());
 
             log.debug("!Check added, val={}, date={}, note={}, actor={}, income={}, expense={}, object={}",
                     checkDto.getVal(), checkDto.getDate(), checkDto.getNote(), checkDto.getActor().getId(),
@@ -175,7 +175,7 @@ public class CheckServiceImpl implements CheckService {
             Check check = checkRepo.findById(id).orElseThrow();
 
             checkRepo.deleteById(id);
-            updateBudget(check.getActor().getId(), check.getDate());
+            updateBudget(check.getDate());
 
             log.debug("!Check removed, id={}", id);
             return id;
@@ -187,36 +187,31 @@ public class CheckServiceImpl implements CheckService {
         }
     }
 
-    private void updateBudget(Long actorId, LocalDate checkDate) {
+    private void updateBudget(LocalDate checkDate) {
 
-        List<Check> checkList = checkRepo.findAllByActorIdAndDate(actorId, checkDate);
-        Budget budget = budgetRepo.findByActorIdAndDate(actorId, checkDate);
+        List<Check> checkList = checkRepo.findAllByDate(checkDate);
+        Budget budget = budgetRepo.findByDate(checkDate);
 
         var sum = 0.0;
         for (Check check : checkList) {
             //Count Value
-            if (check.getIncome() != null)
+            if (check.getIncome() != null && check.getExpense() == null ||
+                check.getIncome() == null && check.getExpense() != null)
                 sum += check.getVal();
-            else
-                sum -= check.getVal();
         }
 
         if (budget == null) {
-            Actor actor = actorRepo.findById(actorId).orElse(null);
-            if (actor != null) {
-                budget = new Budget();
-                budget.setSum(sum);
-                budget.setDate(checkDate);
-                budget.setActor(actor);
-            }
+            budget = new Budget();
+            budget.setSum(sum);
+            budget.setDate(checkDate);
         } else {
             budget.setSum(sum);
         }
 
         try {
             budgetRepo.save(budget);
-            log.debug("!Budget updated successfully, id={}, sum={}, date={}, actor={}",
-                    budget.getId(), budget.getSum(), budget.getDate(), budget.getActor().getId());
+            log.debug("!Budget updated successfully, id={}, sum={}, date={}",
+                    budget.getId(), budget.getSum(), budget.getDate());
 
         } catch (Exception ex) {
 
@@ -226,34 +221,30 @@ public class CheckServiceImpl implements CheckService {
 
     public void updateBudget() {
 
-        List<Check> checkResultList = checkRepo.findDistinctByActorIdAndDate(); //вернуть все уникальные записи по actor и date
+        //Find all unique entries by date
+        List<Check> checkResultList = checkRepo.findDistinctByDate();
         budgetRepo.deleteAll();
 
         for (Check checkRes : checkResultList) {
 
-            List<Check> checkList = checkRepo.findAllByActorIdAndDate(checkRes.getActor().getId(), checkRes.getDate());
+            List<Check> checkList = checkRepo.findAllByDate(checkRes.getDate());
             var sum = 0.0;
 
             for (Check check : checkList) {
                 //Count Value
-                if (check.getIncome() != null)
+                if (check.getIncome() != null && check.getExpense() == null ||
+                    check.getIncome() == null && check.getExpense() != null)
                     sum += check.getVal();
-                else
-                    sum -= check.getVal();
             }
 
             Budget budget = new Budget();
-            Actor actor = actorRepo.findById(checkRes.getActor().getId()).orElse(null);
-            if (actor != null) {
-                budget.setSum(sum);
-                budget.setDate(checkRes.getDate());
-                budget.setActor(actor);
-            }
+            budget.setSum(sum);
+            budget.setDate(checkRes.getDate());
 
             try {
                 budgetRepo.save(budget);
-                log.debug("!Budget updated successfully, id={}, sum={}, date={}, actor={}",
-                        budget.getId(), budget.getSum(), budget.getDate(), budget.getActor().getId());
+                log.debug("!Budget updated successfully, id={}, sum={}, date={}",
+                        budget.getId(), budget.getSum(), budget.getDate());
 
             } catch (Exception ex) {
 
@@ -273,7 +264,12 @@ public class CheckServiceImpl implements CheckService {
         for (Check check : checkList) {
             CheckDto checkDto = new CheckDto();
             checkDto.setId(check.getId());
-            checkDto.setVal(check.getVal());
+            if (check.getIncome() != null && check.getExpense() == null ||
+                check.getIncome() == null && check.getExpense() != null)
+                checkDto.setVal(check.getVal());
+            else
+                checkDto.setVal(null);
+
             checkDto.setDate(check.getDate());
             checkDto.setNote(check.getNote());
             checkDto.setIncome(incomeMapper.toDto(check.getIncome()));
@@ -299,7 +295,12 @@ public class CheckServiceImpl implements CheckService {
         for (Check check : checkList) {
             checkDto = new CheckDto();
             checkDto.setId(check.getId());
-            checkDto.setVal(check.getVal());
+            if (check.getIncome() != null && check.getExpense() == null ||
+                check.getIncome() == null && check.getExpense() != null)
+                checkDto.setVal(check.getVal());
+            else
+                checkDto.setVal(null);
+
             checkDto.setDate(check.getDate());
             checkDto.setNote(check.getNote());
             checkDto.setIncome(incomeMapper.toDto(check.getIncome()));
@@ -324,7 +325,12 @@ public class CheckServiceImpl implements CheckService {
         for (Check check : checkList) {
             checkDto = new CheckDto();
             checkDto.setId(check.getId());
-            checkDto.setVal(check.getVal());
+            if (check.getIncome() != null && check.getExpense() == null ||
+                check.getIncome() == null && check.getExpense() != null)
+                checkDto.setVal(check.getVal());
+            else
+                checkDto.setVal(null);
+
             checkDto.setDate(check.getDate());
             checkDto.setNote(check.getNote());
             checkDto.setIncome(incomeMapper.toDto(check.getIncome()));
@@ -347,7 +353,12 @@ public class CheckServiceImpl implements CheckService {
         for (Check check : checkList) {
             checkDto = new CheckDto();
             checkDto.setId(check.getId());
-            checkDto.setVal(check.getVal());
+            if (check.getIncome() != null && check.getExpense() == null ||
+                check.getIncome() == null && check.getExpense() != null)
+                checkDto.setVal(check.getVal());
+            else
+                checkDto.setVal(null);
+
             checkDto.setDate(check.getDate());
             checkDto.setNote(check.getNote());
             checkDto.setIncome(incomeMapper.toDto(check.getIncome()));
@@ -370,7 +381,12 @@ public class CheckServiceImpl implements CheckService {
         for (Check check : checkList) {
             checkDto = new CheckDto();
             checkDto.setId(check.getId());
-            checkDto.setVal(check.getVal());
+            if (check.getIncome() != null && check.getExpense() == null ||
+                check.getIncome() == null && check.getExpense() != null)
+                checkDto.setVal(check.getVal());
+            else
+                checkDto.setVal(null);
+
             checkDto.setDate(check.getDate());
             checkDto.setNote(check.getNote());
             checkDto.setExpense(expenseMapper.toDto(check.getExpense()));
@@ -393,7 +409,12 @@ public class CheckServiceImpl implements CheckService {
         for (Check check : checkList) {
             checkDto = new CheckDto();
             checkDto.setId(check.getId());
-            checkDto.setVal(check.getVal());
+            if (check.getIncome() != null && check.getExpense() == null ||
+                check.getIncome() == null && check.getExpense() != null)
+                checkDto.setVal(check.getVal());
+            else
+                checkDto.setVal(null);
+
             checkDto.setDate(check.getDate());
             checkDto.setNote(check.getNote());
             checkDto.setExpense(expenseMapper.toDto(check.getExpense()));
@@ -416,9 +437,16 @@ public class CheckServiceImpl implements CheckService {
         for (Check check : checkList) {
             checkDto = new CheckDto();
             checkDto.setId(check.getId());
-            checkDto.setVal(check.getVal());
+            if (check.getIncome() != null && check.getExpense() == null ||
+                check.getIncome() == null && check.getExpense() != null)
+                checkDto.setVal(check.getVal());
+            else
+                checkDto.setVal(null);
+
             checkDto.setDate(check.getDate());
             checkDto.setNote(check.getNote());
+            checkDto.setIncome(incomeMapper.toDto(check.getIncome()));
+            checkDto.setExpense(expenseMapper.toDto(check.getExpense()));
             checkDto.setActor(actorMapper.toDto(check.getActor()));
             checkDto.setObject(check.getObjectId());
             //Add to checkDtoList
@@ -439,15 +467,52 @@ public class CheckServiceImpl implements CheckService {
         for (Check check : checkList) {
             checkDto = new CheckDto();
             checkDto.setId(check.getId());
-            checkDto.setVal(check.getVal());
+            if (check.getIncome() != null && check.getExpense() == null ||
+                check.getIncome() == null && check.getExpense() != null)
+                checkDto.setVal(check.getVal());
+            else
+                checkDto.setVal(null);
+
             checkDto.setDate(check.getDate());
             checkDto.setNote(check.getNote());
+            checkDto.setIncome(incomeMapper.toDto(check.getIncome()));
+            checkDto.setExpense(expenseMapper.toDto(check.getExpense()));
             checkDto.setActor(actorMapper.toDto(check.getActor()));
             checkDto.setObject(check.getObjectId());
             //Add to checkDtoList
             checkDtoList.add(checkDto);
         }
         log.debug("!Getting a list of Checks for a given Actor, id={} from {} to {}", id, dateFrom, dateTo);
+
+        return checkDtoList;
+    }
+
+    @Override
+    public List<CheckDto> getAllCheckDtoByDate(LocalDate checkDate) {
+
+        List<Check> checkList = checkRepo.findAllByDate(checkDate);
+        List<CheckDto> checkDtoList = new ArrayList<>();
+        CheckDto checkDto;
+
+        for (Check check : checkList) {
+            checkDto = new CheckDto();
+            checkDto.setId(check.getId());
+            if (check.getIncome() != null && check.getExpense() == null ||
+                check.getIncome() == null && check.getExpense() != null)
+                checkDto.setVal(check.getVal());
+            else
+                checkDto.setVal(null);
+
+            checkDto.setDate(check.getDate());
+            checkDto.setNote(check.getNote());
+            checkDto.setIncome(incomeMapper.toDto(check.getIncome()));
+            checkDto.setExpense(expenseMapper.toDto(check.getExpense()));
+            checkDto.setActor(actorMapper.toDto(check.getActor()));
+            checkDto.setObject(check.getObjectId());
+            //Add to checkDtoList
+            checkDtoList.add(checkDto);
+        }
+        log.debug("!Getting a list of Checks for a given Date, date={}", checkDate);
 
         return checkDtoList;
     }

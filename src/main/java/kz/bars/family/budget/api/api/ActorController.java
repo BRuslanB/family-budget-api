@@ -5,6 +5,8 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import kz.bars.family.budget.api.dto.ActorDto;
+import kz.bars.family.budget.api.dto.ActorSumDto;
+import kz.bars.family.budget.api.dto.IncomeSumDto;
 import kz.bars.family.budget.api.payload.response.MessageResponse;
 import kz.bars.family.budget.api.service.ActorService;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +18,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -24,7 +27,7 @@ import java.util.List;
 @CrossOrigin
 @Log4j2
 @SecurityRequirement(name = "family-budget-api")
-@Tag(name = "Expense", description = "All methods for getting a list of Actors")
+@Tag(name = "Actor", description = "All methods for getting a list of Actors")
 public class ActorController {
 
     private final ActorService actorService;
@@ -34,6 +37,7 @@ public class ActorController {
     @Operation(description = "Getting an Actor..")
     public ResponseEntity<Object> getActor(@Parameter(description = "'actor' id")
                                            @PathVariable(name = "id") Long id) {
+
         log.debug("!Call method getting an Actor");
 
         if (SecurityContextHolder.getContext().getAuthentication().isAuthenticated()) {
@@ -50,6 +54,7 @@ public class ActorController {
     @PreAuthorize("isAuthenticated()")
     @Operation(description = "Getting a list of All Actors")
     public ResponseEntity<Object> getAllActor() {
+
         log.debug("!Call method getting a list of All Actors");
 
         if (SecurityContextHolder.getContext().getAuthentication().isAuthenticated()) {
@@ -60,10 +65,44 @@ public class ActorController {
         return new ResponseEntity<>(new MessageResponse("Actor list not found"), HttpStatus.BAD_REQUEST);
     }
 
+    @GetMapping(value = "sum")
+    @PreAuthorize("isAuthenticated()")
+    @Operation(description = "Getting a list of All Actors with sum")
+    public ResponseEntity<Object> getAllActorSum() {
+
+        log.debug("!Call method getting a list of All Actors with sum");
+
+        if (SecurityContextHolder.getContext().getAuthentication().isAuthenticated()) {
+
+            List<ActorSumDto> actorSumDtoList = actorService.getAllActorSumDto();
+            return ResponseEntity.ok(actorSumDtoList);
+        }
+        return new ResponseEntity<>(new MessageResponse("Actor with sum list not found"), HttpStatus.BAD_REQUEST);
+    }
+
+    @GetMapping(value = "dates/{date1}/{date2}")
+    @PreAuthorize("isAuthenticated()")
+    @Operation(description = "Getting a list of Actors with sum for the period from.. to..")
+    public ResponseEntity<Object> getAllActorSumBetweenDate(@Parameter(description = "date 'from'")
+                                                            @PathVariable(name = "date1") LocalDate dateFrom,
+                                                            @Parameter(description = "date 'to'")
+                                                            @PathVariable(name = "date2") LocalDate dateTo) {
+
+        log.debug("!Getting a list of Actors with sum for the period");
+
+        if (SecurityContextHolder.getContext().getAuthentication().isAuthenticated()) {
+
+            List<ActorSumDto> actorSumDto = actorService.getAllActorSumDtoBetweenDate(dateFrom, dateTo);
+            return ResponseEntity.ok(actorSumDto);
+        }
+        return new ResponseEntity<>(new MessageResponse("Actor with sum list for the period not found"), HttpStatus.BAD_REQUEST);
+    }
+
     @PostMapping
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @Operation(description = "Actor added")
     public ResponseEntity<Object> addActor(@RequestBody ActorDto actorDto) {
+
         log.debug("!Call method Actor added");
 
         if (SecurityContextHolder.getContext().getAuthentication().isAuthenticated()) {
@@ -86,6 +125,7 @@ public class ActorController {
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @Operation(description = "Actor updated")
     public ResponseEntity<Object> updateActor(@RequestBody ActorDto actorDto) {
+
         log.debug("!Call method Actor updated");
 
         if (SecurityContextHolder.getContext().getAuthentication().isAuthenticated()) {
@@ -109,6 +149,7 @@ public class ActorController {
     @Operation(description = "Actor.. removed")
     public ResponseEntity<Object> deleteActor(@Parameter(description = "'actor' id")
                                               @PathVariable(name = "id") Long id) {
+
         log.debug("!Call method Actor removed");
 
         if (SecurityContextHolder.getContext().getAuthentication().isAuthenticated()) {

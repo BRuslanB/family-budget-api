@@ -19,7 +19,4 @@ public class Actor extends BaseEntity {
     @OneToMany(mappedBy = "actor", cascade = CascadeType.REMOVE, orphanRemoval = true)
     private Set<Check> checks;
 
-    @OneToMany(mappedBy = "actor", cascade = CascadeType.REMOVE, orphanRemoval = true)
-    private Set<Budget> budget;
-
 }

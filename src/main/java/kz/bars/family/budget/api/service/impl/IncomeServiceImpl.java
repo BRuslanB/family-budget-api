@@ -36,6 +36,27 @@ public class IncomeServiceImpl implements IncomeService {
     }
 
     @Override
+    public List<IncomeDto> getAllIncomeDto() {
+
+        List<Income> incomeList;
+        incomeList = incomeRepo.findAll();
+
+        List<IncomeDto> incomeDtoList = new ArrayList<>();
+        IncomeDto incomeDto;
+        for (Income income : incomeList) {
+            incomeDto = new IncomeDto();
+            incomeDto.setId(income.getId());
+            incomeDto.setName(income.getName());
+            incomeDto.setDescription(income.getDescription());
+            //Add to incomeDtoList
+            incomeDtoList.add(incomeDto);
+        }
+        log.debug("!Getting a list of All Incomes");
+
+        return incomeDtoList;
+    }
+
+    @Override
     public IncomeDto addIncomeDto(IncomeDto incomeDto) {
 
         try {
@@ -107,7 +128,7 @@ public class IncomeServiceImpl implements IncomeService {
     }
 
     @Override
-    public List<IncomeSumDto> getAllIncomeDto() {
+    public List<IncomeSumDto> getAllIncomeSumDto() {
 
         List<Income> incomeList;
         incomeList = incomeRepo.findAll();
@@ -122,19 +143,21 @@ public class IncomeServiceImpl implements IncomeService {
             //Count Value
             var sum = 0.0;
             for (Check check : income.getChecks()) {
-                sum += check.getVal();
+                if (check.getExpense() == null) {
+                    sum += check.getVal();
+                }
             }
             incomeSumDto.setSumVal(Math.round(sum * 100.0) / 100.0);
             //Add to incomeDtoList
             incomeSumDtoList.add(incomeSumDto);
         }
-        log.debug("!Getting a list of All Incomes");
+        log.debug("!Getting a list of All Incomes with sum");
 
         return incomeSumDtoList;
     }
 
     @Override
-    public List<IncomeSumDto> getAllIncomeDtoBetweenDate(LocalDate dateFrom, LocalDate dateTo) {
+    public List<IncomeSumDto> getAllIncomeSumDtoBetweenDate(LocalDate dateFrom, LocalDate dateTo) {
 
         List<Income> incomeList;
         incomeList = incomeRepo.findAllByChecksBetweenDateOrderByDate(dateFrom, dateTo);
@@ -150,14 +173,16 @@ public class IncomeServiceImpl implements IncomeService {
             var sum = 0.0;
             for (Check check : income.getChecks()) {
                 if (check.getDate().compareTo(dateFrom) >= 0 && check.getDate().compareTo(dateTo) <= 0) {
-                    sum += check.getVal();
+                    if (check.getExpense() == null) {
+                        sum += check.getVal();
+                    }
                 }
             }
             incomeSumDto.setSumVal(Math.round(sum * 100.0) / 100.0);
             //Add to incomeDtoList
             incomeSumDtoList.add(incomeSumDto);
         }
-        log.debug("!Getting a list of Incomes for the period from {} to {}", dateFrom, dateTo);
+        log.debug("!Getting a list of Incomes with sum for the period from {} to {}", dateFrom, dateTo);
 
         return incomeSumDtoList;
     }
